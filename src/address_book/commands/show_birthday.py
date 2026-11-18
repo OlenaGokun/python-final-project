@@ -4,8 +4,9 @@ from address_book.book import AddressBook
 
 @input_error
 def show_birthday(args, book: AddressBook):
-    name, *_ = args
-    record = book[name]
+    if len(args) != 1:
+        raise ValueError("Usage: show-birthday <name>")
+    record = book[args[0]]
     if record.birthday is None:
-        return f"{name} has no birthday set."
-    return f"{name}'s birthday: {record.birthday.value}"
+        return f"{record.name.value} has no birthday set."
+    return f"{record.name.value}'s birthday: {record.birthday}"

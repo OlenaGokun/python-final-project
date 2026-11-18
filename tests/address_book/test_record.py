@@ -1,7 +1,7 @@
 import unittest
 
-from src.address_book.fields import Name, Phone
-from src.address_book.record import Record
+from address_book.fields import Name, Phone
+from address_book.record import Record
 
 
 class TestRecordCreation(unittest.TestCase):
@@ -11,7 +11,19 @@ class TestRecordCreation(unittest.TestCase):
         self.assertEqual(record.name.value, "John")
 
     def test_phones_start_empty(self):
-        self.assertEqual(Record("John").phones, [])
+        self.assertEqual(Record("John").phones, ())
+
+    def test_phones_cannot_be_mutated_from_outside(self):
+        record = Record("John")
+        with self.assertRaises(AttributeError):
+            record.phones.append(Phone("1234567890"))
+        self.assertEqual(record.phones, ())
+
+    def test_attributes_are_read_only(self):
+        record = Record("John")
+        for attr in ("name", "phones", "birthday"):
+            with self.subTest(attr=attr), self.assertRaises(AttributeError):
+                setattr(record, attr, None)
 
     def test_invalid_name_is_rejected(self):
         with self.assertRaises(ValueError):
@@ -37,7 +49,7 @@ class TestAddPhone(unittest.TestCase):
     def test_invalid_phone_is_rejected(self):
         with self.assertRaises(ValueError):
             self.record.add_phone("123")
-        self.assertEqual(self.record.phones, [])
+        self.assertEqual(self.record.phones, ())
 
     def test_duplicate_phone_is_rejected(self):
         self.record.add_phone("1234567890")

@@ -1,12 +1,15 @@
 import unittest
 from datetime import date
-from src.address_book.fields import Birthday
+from address_book.fields import Birthday
 
 
 class TestBirthday(unittest.TestCase):
     def test_accepts_valid_date_format(self):
         birthday = Birthday("15.03.1990")
         self.assertEqual(birthday.value, date(1990, 3, 15))
+
+    def test_str_uses_input_format(self):
+        self.assertEqual(str(Birthday("05.03.1990")), "05.03.1990")
 
     def test_stores_as_date_object(self):
         birthday = Birthday("01.01.2000")

@@ -1,7 +1,7 @@
 import unittest
 from datetime import date, timedelta
-from src.address_book.book import AddressBook
-from src.address_book.record import Record
+from address_book.book import AddressBook
+from address_book.record import Record
 
 
 class TestGetUpcomingBirthdays(unittest.TestCase):
@@ -138,7 +138,7 @@ class TestRecordWithBirthday(unittest.TestCase):
         record.add_phone("1234567890")
         record.add_birthday("15.03.1990")
         result = str(record)
-        self.assertIn("1990-03-15", result)
+        self.assertIn("15.03.1990", result)
         self.assertIn("John", result)
         self.assertIn("1234567890", result)
 

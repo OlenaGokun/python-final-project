@@ -8,7 +8,7 @@ def input_error(func):
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             return str(e) if str(e) else "Invalid input. Please check your command."
         except KeyError:
             return "Contact not found."

@@ -52,6 +52,18 @@ pytest tests/address_book/test_commands.py::TestAddContactCommand -v
 - `birthdays` — Show upcoming birthdays in the next 7 days
 - `close` / `exit` — Quit the program
 
+### Data storage
+
+The address book is saved on exit (including Ctrl+C / Ctrl+D) to a per-user folder:
+
+| OS      | Location                                                         |
+|---------|------------------------------------------------------------------|
+| Windows | `%APPDATA%\phone-book-bot\addressbook.pkl`                       |
+| macOS   | `~/Library/Application Support/phone-book-bot/addressbook.pkl`   |
+| Linux   | `$XDG_DATA_HOME/phone-book-bot/addressbook.pkl` (default `~/.local/share/...`) |
+
+Saving is atomic: the file is written to a temporary file first and then swapped in, so a crash can't corrupt existing data.
+
 ### Requirements
 
 - Python 3.10+

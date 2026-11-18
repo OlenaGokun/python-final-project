@@ -1,8 +1,8 @@
 import unittest
 from collections import UserDict
 
-from src.address_book.book import AddressBook
-from src.address_book.record import Record
+from address_book.book import AddressBook
+from address_book.record import Record
 
 
 class AddressBookTestCase(unittest.TestCase):
@@ -17,12 +17,13 @@ class TestAddRecord(AddressBookTestCase):
     def test_is_a_userdict(self):
         self.assertIsInstance(self.book, UserDict)
 
-    def test_stores_the_record_under_its_name(self):
-        self.assertIs(self.book.data["John"], self.john)
+    def test_stores_the_record_under_its_casefolded_name(self):
+        self.assertIs(self.book.data["john"], self.john)
 
     def test_supports_len_and_membership(self):
         self.assertEqual(len(self.book), 1)
         self.assertIn("John", self.book)
+        self.assertIn("JOHN", self.book)
 
     def test_duplicate_name_raises_error(self):
         replacement = Record("John")
@@ -30,6 +31,11 @@ class TestAddRecord(AddressBookTestCase):
         with self.assertRaises(ValueError) as context:
             self.book.add_record(replacement)
         self.assertIn("already exists", str(context.exception))
+
+    def test_duplicate_name_in_other_case_raises_error(self):
+        with self.assertRaises(ValueError):
+            self.book.add_record(Record("JOHN"))
+        self.assertIs(self.book.find("john"), self.john)
 
 
 class TestFind(AddressBookTestCase):
@@ -39,8 +45,12 @@ class TestFind(AddressBookTestCase):
     def test_unknown_name_returns_none(self):
         self.assertIsNone(self.book.find("Nobody"))
 
-    def test_lookup_is_case_sensitive(self):
-        self.assertIsNone(self.book.find("john"))
+    def test_lookup_is_case_insensitive(self):
+        self.assertIs(self.book.find("john"), self.john)
+        self.assertIs(self.book.find("JOHN"), self.john)
+
+    def test_item_access_is_case_insensitive(self):
+        self.assertIs(self.book["jOhN"], self.john)
 
 
 class TestDelete(AddressBookTestCase):
@@ -48,6 +58,10 @@ class TestDelete(AddressBookTestCase):
         self.book.delete("John")
         self.assertEqual(len(self.book), 0)
         self.assertIsNone(self.book.find("John"))
+
+    def test_delete_is_case_insensitive(self):
+        self.assertIs(self.book.delete("JOHN"), self.john)
+        self.assertEqual(len(self.book), 0)
 
     def test_returns_the_removed_record(self):
         self.assertIs(self.book.delete("John"), self.john)

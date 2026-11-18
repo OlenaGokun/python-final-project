@@ -1,6 +1,6 @@
 import unittest
 
-from src.address_book.fields import Field, Name, Phone
+from address_book.fields import Field, Name, Phone
 
 
 class TestField(unittest.TestCase):
@@ -17,6 +17,10 @@ class TestField(unittest.TestCase):
     def test_is_hashable(self):
         self.assertEqual(len({Phone("1234567890"), Phone("1234567890")}), 1)
 
+    def test_value_is_read_only(self):
+        with self.assertRaises(AttributeError):
+            Phone("1234567890").value = "0000000000"
+
 
 class TestName(unittest.TestCase):
     def test_stores_the_value(self):
@@ -24,6 +28,9 @@ class TestName(unittest.TestCase):
 
     def test_strips_surrounding_whitespace(self):
         self.assertEqual(Name("  John  ").value, "John")
+
+    def test_key_is_casefolded(self):
+        self.assertEqual(Name("  JoHn ").key, "john")
 
     def test_empty_name_is_rejected(self):
         with self.assertRaises(ValueError):
@@ -53,6 +60,10 @@ class TestPhone(unittest.TestCase):
     def test_non_digits_are_rejected(self):
         with self.assertRaises(ValueError):
             Phone("12345abcde")
+
+    def test_non_ascii_digits_are_rejected(self):
+        with self.assertRaises(ValueError):
+            Phone("\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669\u0660")
 
     def test_formatting_characters_are_rejected(self):
         with self.assertRaises(ValueError):

@@ -1,3 +1,5 @@
+import pickle
+
 from address_book.data import parse_input
 from pickle_manager import load_data, save_data
 from address_book.commands.add_contact import add_contact
@@ -31,13 +33,41 @@ def print_commands():
     print()
 
 
+def confirm_exit(book: AddressBook) -> bool:
+    """Save the book; if that fails, ask whether to quit anyway."""
+    try:
+        save_data(book)
+        return True
+    except (OSError, pickle.PickleError) as e:
+        print(f"Failed to save address book: {e}")
+
+    while True:
+        try:
+            choice = input("Exit without saving? (yes/no): ").strip().casefold()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return True
+
+        if choice in ("yes", "y"):
+            return True
+        if choice in ("no", "n"):
+            return False
+        print("Please enter yes or no.")
+
+
 def main():
     book = load_data()
     print("Welcome to the assistant bot!")
     print_commands()
-    
+
     while True:
-        user_input = input("Enter a command: ")
+        try:
+            user_input = input("Enter a command: ")
+        except (EOFError, KeyboardInterrupt):
+            # Ctrl+D / Ctrl+C: exit the same way as "exit", so data gets saved.
+            print()
+            user_input = "exit"
+
         command, *args = parse_input(user_input)
 
         if not command:
@@ -45,9 +75,10 @@ def main():
             continue
 
         if command in ["close", "exit"]:
-
-            print("Good bye!")
-            break
+            if confirm_exit(book):
+                print("Good bye!")
+                break
+            continue
 
         elif command == "hello":
             print("How can I help you?")
@@ -75,5 +106,3 @@ def main():
 
         else:
             print("Invalid command.")
-
-    save_data(book)

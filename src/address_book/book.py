@@ -48,17 +48,37 @@ class AddressBook(UserDict):
         return users_to_congratulate
 
 
+    @staticmethod
+    def _key(name):
+        """Normalize a user-supplied name the same way Name.key does."""
+        return name.strip().casefold() if isinstance(name, str) else name
+
+    # Route the dict interface (book[name], name in book, del book[name])
+    # through the same case-insensitive key as find()/delete().
+    def __getitem__(self, name):
+        return super().__getitem__(self._key(name))
+
+    def __setitem__(self, name, record):
+        super().__setitem__(self._key(name), record)
+
+    def __delitem__(self, name):
+        super().__delitem__(self._key(name))
+
+    def __contains__(self, name):
+        return super().__contains__(self._key(name))
+
     def add_record(self, record):
-        if record.name.value in self.data:
-            raise ValueError(f"Contact '{record.name.value}' already exists.")
-        self.data[record.name.value] = record
+        if record.name.key in self.data:
+            existing = self.data[record.name.key]
+            raise ValueError(f"Contact '{existing.name.value}' already exists.")
+        self.data[record.name.key] = record
         return record
 
     def find(self, name):
-        return self.data.get(name)
+        return self.data.get(self._key(name))
 
     def delete(self, name):
-        return self.data.pop(name, None)
+        return self.data.pop(self._key(name), None)
 
     def __str__(self):
         if not self.data:

@@ -1,13 +1,13 @@
 import unittest
-from src.address_book.book import AddressBook
-from src.address_book.record import Record
-from src.address_book.commands.add_contact import add_contact
-from src.address_book.commands.change_contact import change_contact
-from src.address_book.commands.add_birthday import add_birthday
-from src.address_book.commands.show_phone import show_phone
-from src.address_book.commands.show_birthday import show_birthday
-from src.address_book.commands.show_all import show_all
-from src.address_book.commands.show_birthdays import show_birthdays
+from address_book.book import AddressBook
+from address_book.record import Record
+from address_book.commands.add_contact import add_contact
+from address_book.commands.change_contact import change_contact
+from address_book.commands.add_birthday import add_birthday
+from address_book.commands.show_phone import show_phone
+from address_book.commands.show_birthday import show_birthday
+from address_book.commands.show_all import show_all
+from address_book.commands.show_birthdays import show_birthdays
 
 
 class TestAddContactCommand(unittest.TestCase):
@@ -26,6 +26,13 @@ class TestAddContactCommand(unittest.TestCase):
         self.assertEqual(result, "Contact updated.")
         self.assertEqual(len(self.book.find("John").phones), 1)
 
+    def test_different_case_updates_existing_contact(self):
+        add_contact(["John", "1234567890"], self.book)
+        result = add_contact(["john", "5555555555"], self.book)
+        self.assertEqual(result, "Contact updated.")
+        self.assertEqual(len(self.book), 1)
+        self.assertEqual(len(self.book.find("JOHN").phones), 2)
+
     def test_adds_contact_without_phone(self):
         result = add_contact(["John"], self.book)
         self.assertEqual(result, "Contact added.")
@@ -35,13 +42,22 @@ class TestAddContactCommand(unittest.TestCase):
 
     def test_missing_name_raises_error(self):
         result = add_contact([], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
 
     def test_invalid_phone_raises_error(self):
         result = add_contact(["John", "123"], self.book)
         # Invalid phone should raise error with helpful message
         self.assertIn("exactly 10 digits", result)
+
+    def test_invalid_phone_does_not_create_contact(self):
+        add_contact(["John", "123"], self.book)
+        self.assertIsNone(self.book.find("John"))
+
+    def test_too_many_args_shows_usage(self):
+        result = add_contact(["John", "Smith", "1234567890"], self.book)
+        self.assertEqual(result, "Usage: add <name> [phone]")
+        self.assertEqual(len(self.book), 0)
 
 
 class TestChangeContactCommand(unittest.TestCase):
@@ -64,11 +80,11 @@ class TestChangeContactCommand(unittest.TestCase):
 
     def test_missing_arguments(self):
         result = change_contact(["John", "1234567890"], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
     def test_empty_args_raises_error(self):
         result = change_contact([], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
     def test_old_phone_not_found(self):
         result = change_contact(["John", "9999999999", "1111111111"], self.book)
@@ -92,20 +108,20 @@ class TestAddBirthdayCommand(unittest.TestCase):
 
     def test_missing_name_raises_error(self):
         result = add_birthday(["15.03.1990"], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
     def test_missing_birthday_raises_error(self):
         result = add_birthday(["John"], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
     def test_empty_args_raises_error(self):
         result = add_birthday([], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
     def test_invalid_birthday_format_raises_error(self):
         result = add_birthday(["John", "1990-03-15"], self.book)
         # Invalid date format raises ValueError in Birthday class
-        self.assertIn("Invalid date format", result) or self.assertIn("format", result.lower())
+        self.assertEqual(result, "Invalid date format. Use DD.MM.YYYY")
 
 
 class TestShowPhoneCommand(unittest.TestCase):
@@ -125,9 +141,13 @@ class TestShowPhoneCommand(unittest.TestCase):
         result = show_phone(["Nobody"], self.book)
         self.assertEqual(result, "Contact not found.")
 
+    def test_contact_without_phones(self):
+        self.book.add_record(Record("Jane"))
+        self.assertEqual(show_phone(["jane"], self.book), "No phone numbers found for Jane.")
+
     def test_missing_name_raises_error(self):
         result = show_phone([], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
 
 
@@ -140,7 +160,7 @@ class TestShowBirthdayCommand(unittest.TestCase):
 
     def test_shows_birthday(self):
         result = show_birthday(["John"], self.book)
-        self.assertIn("1990-03-15", result)
+        self.assertIn("15.03.1990", result)
 
     def test_contact_without_birthday(self):
         record = Record("Jane")
@@ -148,13 +168,17 @@ class TestShowBirthdayCommand(unittest.TestCase):
         result = show_birthday(["Jane"], self.book)
         self.assertEqual(result, "Jane has no birthday set.")
 
+    def test_lookup_is_case_insensitive_and_shows_stored_name(self):
+        result = show_birthday(["john"], self.book)
+        self.assertEqual(result, "John's birthday: 15.03.1990")
+
     def test_contact_not_found(self):
         result = show_birthday(["Nobody"], self.book)
         self.assertEqual(result, "Contact not found.")
 
     def test_missing_name_raises_error(self):
         result = show_birthday([], self.book)
-        self.assertIn("not enough values to unpack", result.lower())
+        self.assertTrue(result.startswith("Usage:"), result)
 
 
 
