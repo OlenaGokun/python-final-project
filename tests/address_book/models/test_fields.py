@@ -1,6 +1,8 @@
-import unittest
+"""Tests for field classes (Name, Phone, Birthday)"""
 
-from address_book.fields import Field, Name, Phone
+import unittest
+from address_book.models.fields import Field, Name, Phone, Birthday
+from address_book.core import InvalidNameError, InvalidPhoneFormatError, InvalidBirthdayFormatError
 
 
 class TestField(unittest.TestCase):
@@ -10,9 +12,18 @@ class TestField(unittest.TestCase):
     def test_str_converts_non_strings(self):
         self.assertEqual(str(Field(42)), "42")
 
+    def test_repr_includes_concrete_type_and_value(self):
+        self.assertEqual(repr(Field("abc")), "Field('abc')")
+        self.assertEqual(repr(Name("John")), "Name('John')")
+
     def test_equality_requires_the_same_type(self):
         self.assertEqual(Phone("1234567890"), Phone("1234567890"))
         self.assertNotEqual(Phone("1234567890"), Field("1234567890"))
+
+    def test_equality_with_non_field_returns_not_implemented(self):
+        field = Field("abc")
+        self.assertIs(field.__eq__("abc"), NotImplemented)
+        self.assertNotEqual(field, "abc")
 
     def test_is_hashable(self):
         self.assertEqual(len({Phone("1234567890"), Phone("1234567890")}), 1)
@@ -33,15 +44,15 @@ class TestName(unittest.TestCase):
         self.assertEqual(Name("  JoHn ").key, "john")
 
     def test_empty_name_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidNameError):
             Name("")
 
     def test_whitespace_only_name_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidNameError):
             Name("   ")
 
     def test_non_string_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidNameError):
             Name(None)
 
 
@@ -50,37 +61,38 @@ class TestPhone(unittest.TestCase):
         self.assertEqual(Phone("1234567890").value, "1234567890")
 
     def test_too_short_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidPhoneFormatError):
             Phone("123456789")
 
     def test_too_long_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidPhoneFormatError):
             Phone("12345678901")
 
-    def test_non_digits_are_rejected(self):
-        with self.assertRaises(ValueError):
-            Phone("12345abcde")
-
-    def test_non_ascii_digits_are_rejected(self):
-        with self.assertRaises(ValueError):
-            Phone("\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669\u0660")
-
-    def test_formatting_characters_are_rejected(self):
-        with self.assertRaises(ValueError):
-            Phone("123-456-78")
-
     def test_empty_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidPhoneFormatError):
             Phone("")
 
     def test_non_string_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidPhoneFormatError):
             Phone(1234567890)
 
+    def test_non_digits_are_rejected(self):
+        with self.assertRaises(InvalidPhoneFormatError):
+            Phone("123456789a")
+
+    def test_formatting_characters_are_rejected(self):
+        with self.assertRaises(InvalidPhoneFormatError):
+            Phone("123-456-7890")
+
+    def test_non_ascii_digits_are_rejected(self):
+        with self.assertRaises(InvalidPhoneFormatError):
+            # Fullwidth digits
+            Phone("１２３４５６７８９０")
+
     def test_error_message_mentions_the_value(self):
-        with self.assertRaises(ValueError) as context:
-            Phone("123")
-        self.assertIn("123", str(context.exception))
+        with self.assertRaises(InvalidPhoneFormatError) as context:
+            Phone("abc")
+        self.assertIn("abc", str(context.exception))
 
 
 if __name__ == "__main__":

@@ -1,34 +1,24 @@
 import pickle
 
-from address_book.data import parse_input
+from address_book import parse_input, AddressBook, CommandRegistry
+from address_book.commands.base_command import ExitRequest
 from pickle_manager import load_data, save_data
-from address_book.commands.add_contact import add_contact
-from address_book.commands.change_contact import change_contact
-from address_book.commands.show_all import show_all
-from address_book.commands.show_phone import show_phone
-from address_book.commands.add_birthday import add_birthday
-from address_book.commands.show_birthday import show_birthday
-from address_book.commands.show_birthdays import show_birthdays
-
-from address_book.book import AddressBook
-
-COMMANDS = [
-    ("hello", "get a greeting from the bot"),
-    ("add <name> [phone]", "add a new contact or add phone to existing"),
-    ("change <name> <old_phone> <new_phone>", "change phone number for a contact"),
-    ("phone <name>", "show phone numbers for a contact"),
-    ("all", "show all contacts in address book"),
-    ("add-birthday <name> <DD.MM.YYYY>", "add a birthday for a contact"),
-    ("show-birthday <name>", "show birthday for a contact"),
-    ("birthdays", "show upcoming birthdays in the next 7 days"),
-    ("close | exit", "quit the program"),
-]
 
 
-def print_commands():
-    width = max(len(usage) for usage, _ in COMMANDS)
+def print_commands(registry: CommandRegistry):
+    """Print available commands from the registry."""
     print("\nAvailable commands:")
-    for usage, description in COMMANDS:
+
+    commands = [
+        (cmd.get_usage(), cmd.get_description())
+        for cmd in registry.get_all_commands()
+    ]
+
+    # Calculate width for alignment
+    width = max(len(usage) for usage, _ in commands)
+
+    # Print nicely formatted
+    for usage, description in commands:
         print(f"  {usage.ljust(width)}  - {description}")
     print()
 
@@ -56,9 +46,10 @@ def confirm_exit(book: AddressBook) -> bool:
 
 
 def main():
+    registry = CommandRegistry()
     book = load_data()
     print("Welcome to the assistant bot!")
-    print_commands()
+    print_commands(registry)
 
     while True:
         try:
@@ -74,35 +65,20 @@ def main():
             print("Please enter a command.")
             continue
 
-        if command in ["close", "exit"]:
+        cmd = registry.get_command(command)
+        if cmd is None:
+            print("Invalid command.")
+            continue
+
+        try:
+            result = cmd.run(args, book)
+        except Exception as e:
+            print(f"Error: {e}")
+            continue
+
+        if isinstance(result, ExitRequest):
             if confirm_exit(book):
                 print("Good bye!")
                 break
-            continue
-
-        elif command == "hello":
-            print("How can I help you?")
-
-        elif command == "add":
-            print(add_contact(args, book))
-
-        elif command == "change":
-            print(change_contact(args, book))
-
-        elif command == "phone":
-            print(show_phone(args, book))
-
-        elif command == "all":
-            print(show_all(book))
-
-        elif command == "add-birthday":
-            print(add_birthday(args, book))
-
-        elif command == "show-birthday":
-            print(show_birthday(args, book))
-
-        elif command == "birthdays":
-            print(show_birthdays(book))
-
         else:
-            print("Invalid command.")
+            print(result)

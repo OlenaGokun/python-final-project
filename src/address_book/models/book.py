@@ -1,6 +1,7 @@
 from collections import UserDict
 from datetime import datetime, date, timedelta
 import calendar
+from address_book.core import ContactNotFoundError, DuplicateContactError
 
 class AddressBook(UserDict):
 
@@ -56,7 +57,11 @@ class AddressBook(UserDict):
     # Route the dict interface (book[name], name in book, del book[name])
     # through the same case-insensitive key as find()/delete().
     def __getitem__(self, name):
-        return super().__getitem__(self._key(name))
+        key = self._key(name)
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            raise ContactNotFoundError(f"Contact '{name}' not found.")
 
     def __setitem__(self, name, record):
         super().__setitem__(self._key(name), record)
@@ -70,7 +75,7 @@ class AddressBook(UserDict):
     def add_record(self, record):
         if record.name.key in self.data:
             existing = self.data[record.name.key]
-            raise ValueError(f"Contact '{existing.name.value}' already exists.")
+            raise DuplicateContactError(f"Contact '{existing.name.value}' already exists.")
         self.data[record.name.key] = record
         return record
 

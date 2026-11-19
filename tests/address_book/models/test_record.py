@@ -1,8 +1,8 @@
 import unittest
 
-from address_book.fields import Name, Phone
-from address_book.record import Record
-
+from address_book.models.fields import Name, Phone
+from address_book.models.record import Record
+from address_book.core import InvalidNameError, InvalidPhoneFormatError, PhoneNotFoundError, DuplicatePhoneError
 
 class TestRecordCreation(unittest.TestCase):
     def test_name_is_stored_as_a_name_object(self):
@@ -26,9 +26,8 @@ class TestRecordCreation(unittest.TestCase):
                 setattr(record, attr, None)
 
     def test_invalid_name_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidNameError):
             Record("")
-
 
 class TestAddPhone(unittest.TestCase):
     def setUp(self):
@@ -47,16 +46,15 @@ class TestAddPhone(unittest.TestCase):
         )
 
     def test_invalid_phone_is_rejected(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidPhoneFormatError):
             self.record.add_phone("123")
         self.assertEqual(self.record.phones, ())
 
     def test_duplicate_phone_is_rejected(self):
         self.record.add_phone("1234567890")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DuplicatePhoneError):
             self.record.add_phone("1234567890")
         self.assertEqual(len(self.record.phones), 1)
-
 
 class TestFindPhone(unittest.TestCase):
     def setUp(self):
@@ -72,7 +70,6 @@ class TestFindPhone(unittest.TestCase):
     def test_unknown_phone_returns_none(self):
         self.assertIsNone(self.record.find_phone("0000000000"))
 
-
 class TestRemovePhone(unittest.TestCase):
     def setUp(self):
         self.record = Record("John")
@@ -84,10 +81,9 @@ class TestRemovePhone(unittest.TestCase):
         self.assertEqual([p.value for p in self.record.phones], ["5555555555"])
 
     def test_unknown_phone_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(PhoneNotFoundError):
             self.record.remove_phone("0000000000")
         self.assertEqual(len(self.record.phones), 2)
-
 
 class TestEditPhone(unittest.TestCase):
     def setUp(self):
@@ -107,16 +103,15 @@ class TestEditPhone(unittest.TestCase):
         )
 
     def test_unknown_phone_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(PhoneNotFoundError):
             self.record.edit_phone("0000000000", "1112223333")
 
     def test_invalid_replacement_is_rejected_without_changing_anything(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidPhoneFormatError):
             self.record.edit_phone("1234567890", "123")
         self.assertEqual(
             [p.value for p in self.record.phones], ["1234567890", "5555555555"]
         )
-
 
 class TestRecordStr(unittest.TestCase):
     def test_matches_the_expected_format(self):
@@ -129,7 +124,6 @@ class TestRecordStr(unittest.TestCase):
 
     def test_record_without_phones(self):
         self.assertEqual(str(Record("John")), "Contact name: John, phones: ")
-
 
 if __name__ == "__main__":
     unittest.main()
