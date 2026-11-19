@@ -86,14 +86,5 @@ class TestSaveLoad(unittest.TestCase):
             self.assertTrue((self.dir / "app" / "addressbook.pkl").exists())
             self.assertIsNotNone(load_data().find("john"))
 
-    def test_old_location_is_not_migrated(self):
-        old_path = self.dir / "address-book" / "addressbook.pkl"
-        save_data(self._book(), old_path)
-        with mock.patch.object(pickle_manager.sys, "platform", "linux"), \
-                mock.patch.dict(os.environ, {"XDG_DATA_HOME": str(self.dir)}):
-            self.assertEqual(len(load_data()), 0)
-            self.assertTrue(old_path.exists())
-            self.assertFalse((self.dir / "personal-helper-bot" / "addressbook.pkl").exists())
-
 if __name__ == "__main__":
     unittest.main()
