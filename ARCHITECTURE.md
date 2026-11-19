@@ -1,4 +1,4 @@
-# Address Book Application
+# Personal Helper Bot Architecture
 
 A command-line address book that stores contact information and birthdays. The application uses a modular command system where each command is a separate file, making it easy to add new features.
 
@@ -23,6 +23,7 @@ Utilities and support code:
 - `data.py` — Input parsing (`parse_input`)
 - `decorators.py` — Error handling (`@input_error`)
 - `exceptions.py` — Custom errors (`InvalidInputError`, `CommandError`)
+- `pickle_manager.py` — Address book persistence
 
 ## How It Works
 
@@ -72,7 +73,7 @@ class AddContactCommand(BaseCommand):
 src/address_book/
 ├── models/           # Domain entities and validation
 ├── commands/         # Command implementations
-├── core/             # Parsing, error handling, and exceptions
+├── core/             # Parsing, error handling, and persistence
 └── command_registry.py
 ```
 

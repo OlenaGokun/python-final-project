@@ -1,4 +1,4 @@
-# Address Book
+# Personal Helper Bot
 
 A command-line application for managing contacts with phone numbers and birthdays.
 
@@ -34,10 +34,10 @@ pip install -e ".[dev]"
 source .venv/bin/activate
 
 # Run the application
-address-book
+personal-helper-bot
 ```
 
-That's it! The `address-book` command is now available after installation.
+The `personal-helper-bot` command is now available after installation.
 
 **Alternative methods (if you skip the installation):**
 ```bash
@@ -107,9 +107,9 @@ Contacts are saved in a pickle file when you quit the application:
 
 | OS      | Location                                                      |
 |---------|---------------------------------------------------------------|
-| Windows | `%APPDATA%\address-book\addressbook.pkl`                      |
-| macOS   | `~/Library/Application Support/address-book/addressbook.pkl`  |
-| Linux   | `$XDG_DATA_HOME/address-book/addressbook.pkl` (default `~/.local/share/...`) |
+| Windows | `%APPDATA%\personal-helper-bot\addressbook.pkl` |
+| macOS   | `~/Library/Application Support/personal-helper-bot/addressbook.pkl` |
+| Linux   | `$XDG_DATA_HOME/personal-helper-bot/addressbook.pkl` (default `~/.local/share/personal-helper-bot/addressbook.pkl`) |
 
 Saving is atomic: the file is written to a temporary file first and then swapped in, so a crash can't corrupt existing data.
 

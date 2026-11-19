@@ -2,7 +2,7 @@ import pickle
 
 from address_book import parse_input, AddressBook, CommandRegistry
 from address_book.commands.base_command import ExitRequest
-from pickle_manager import load_data, save_data
+from address_book.core.pickle_manager import load_data, save_data
 
 
 def print_commands(registry: CommandRegistry):
@@ -48,7 +48,7 @@ def confirm_exit(book: AddressBook) -> bool:
 def main():
     registry = CommandRegistry()
     book = load_data()
-    print("Welcome to the assistant bot!")
+    print("Welcome to Personal Helper Bot!")
     print_commands(registry)
 
     while True:
