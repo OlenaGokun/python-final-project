@@ -1,5 +1,6 @@
-import re
 from datetime import date, datetime
+import re
+from address_book.core import InvalidNameError, InvalidPhoneFormatError, InvalidBirthdayFormatError
 
 
 class Field:
@@ -28,7 +29,7 @@ class Field:
 class Name(Field):
     def __init__(self, value):
         if not isinstance(value, str) or not value.strip():
-            raise ValueError("Name is required and must be a non-empty string.")
+            raise InvalidNameError("Name is required and must be a non-empty string.")
         super().__init__(value.strip())
 
     @property
@@ -42,7 +43,7 @@ class Phone(Field):
 
     def __init__(self, value):
         if not isinstance(value, str) or len(value) != self.LENGTH or not value.isascii() or not value.isdigit():
-            raise ValueError(f"Phone must be exactly {self.LENGTH} digits, got {value!r}.")
+            raise InvalidPhoneFormatError(f"Phone must be exactly {self.LENGTH} digits, got {value!r}.")
         super().__init__(value)
 
 
@@ -51,7 +52,7 @@ class Birthday(Field):
         try:
             date_obj = datetime.strptime(value, "%d.%m.%Y").date()
         except (ValueError, TypeError):
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise InvalidBirthdayFormatError("Invalid date format. Use DD.MM.YYYY")
         super().__init__(date_obj)
 
     @property

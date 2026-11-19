@@ -1,8 +1,15 @@
-# goit-pycore-hw-08
+# Address Book
 
-Advanced address book with birthdays, CLI commands, object serialization (pickle), and comprehensive unit tests.
+A command-line application for managing contacts with phone numbers and birthdays.
 
-Built on OOP entities: `Field`, `Name`, `Phone`, `Birthday`, `Record`, and `AddressBook` with a command-line interface and support for pickle serialization.
+## Features
+
+- Store and manage contacts
+- Add, update, and delete phone numbers
+- Track birthdays and get reminders
+- Interactive help system
+- Automatic data persistence
+- Full test coverage
 
 ## Instructions
 
@@ -10,11 +17,11 @@ Built on OOP entities: `Field`, `Name`, `Phone`, `Birthday`, `Record`, and `Addr
 
 ```bash
 # Enter the project directory
-cd goit-pycore-hw-08
+cd python-final-project
 
 # Create virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install in editable mode with dev dependencies
 pip install -e ".[dev]"
@@ -23,25 +30,57 @@ pip install -e ".[dev]"
 ### Run the Application
 
 ```bash
-# Start the CLI assistant
-python3 -m hw08
+# Activate virtual environment (if not already active)
+source .venv/bin/activate
+
+# Run the application
+address-book
+```
+
+That's it! The `address-book` command is now available after installation.
+
+**Alternative methods (if you skip the installation):**
+```bash
+# Run directly from src/
+cd src
+python3 main.py
+
+# Or set PYTHONPATH and run from project root
+PYTHONPATH=src python3 src/main.py
 ```
 
 ### Run Tests
 
 ```bash
 # Run all tests
-pytest
+pytest tests/
 
-# Run specific test file
-pytest tests/address_book/test_birthday.py -v
+# Run model tests (domain layer)
+pytest tests/address_book/models/ -v
 
-# Run specific test class
-pytest tests/address_book/test_commands.py::TestAddContactCommand -v
+# Run command tests (application layer)
+pytest tests/address_book/commands/ -v
+
+# Run infrastructure tests
+pytest tests/address_book/test_*.py -v
+
+# Install coverage once (if not already installed)
+python -m pip install coverage
+
+# Run tests with branch coverage
+python -m coverage run --branch --source=src -m pytest
+
+# Show coverage summary and uncovered lines
+python -m coverage report -m
+
+# Optional: generate an HTML report in htmlcov/
+python -m coverage html
 ```
 
 ### Available Commands
 
+- `help` — Show all available commands
+- `help <command>` — Show details for a specific command
 - `hello` — Get a greeting from the bot
 - `add <name> [phone]` — Add a new contact or add phone to existing (phone is optional)
 - `change <name> <old_phone> <new_phone>` — Change phone number for a contact
@@ -52,19 +91,35 @@ pytest tests/address_book/test_commands.py::TestAddContactCommand -v
 - `birthdays` — Show upcoming birthdays in the next 7 days
 - `close` / `exit` — Quit the program
 
+### Interactive Help
+
+The application includes an interactive help system:
+
+```bash
+help              # List all available commands
+help add          # Show details for the 'add' command
+help add-birthday # Show details for the 'add-birthday' command
+```
+
 ### Data storage
 
-The address book is saved on exit (including Ctrl+C / Ctrl+D) to a per-user folder:
+Contacts are saved in a pickle file when you quit the application:
 
-| OS      | Location                                                         |
-|---------|------------------------------------------------------------------|
-| Windows | `%APPDATA%\phone-book-bot\addressbook.pkl`                       |
-| macOS   | `~/Library/Application Support/phone-book-bot/addressbook.pkl`   |
-| Linux   | `$XDG_DATA_HOME/phone-book-bot/addressbook.pkl` (default `~/.local/share/...`) |
+| OS      | Location                                                      |
+|---------|---------------------------------------------------------------|
+| Windows | `%APPDATA%\address-book\addressbook.pkl`                      |
+| macOS   | `~/Library/Application Support/address-book/addressbook.pkl`  |
+| Linux   | `$XDG_DATA_HOME/address-book/addressbook.pkl` (default `~/.local/share/...`) |
 
 Saving is atomic: the file is written to a temporary file first and then swapped in, so a crash can't corrupt existing data.
 
 ### Requirements
 
 - Python 3.10+
-- No external dependencies
+- No external dependencies (testing requires pytest)
+
+## Architecture & Design Patterns
+
+This project uses a modular command-based architecture where each command is a separate class. Commands are automatically discovered and registered when the app starts.
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the app works and [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to add new commands.
