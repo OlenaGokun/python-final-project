@@ -1,8 +1,4 @@
-"""Address Book - A command-line contact management application
-
-A professional contact management system with birthday tracking and
-command-based interface using the Registry pattern for extensibility.
-"""
+"""Personal Helper Bot's address book and command system."""
 
 # Domain models
 from address_book.models import AddressBook, Record, Field, Name, Phone, Birthday
@@ -24,8 +20,6 @@ from address_book.core import (
     DuplicatePhoneError,
     CommandError,
 )
-
-__version__ = "1.0.0"
 
 __all__ = [
     # Models
@@ -50,5 +44,3 @@ __all__ = [
     "DuplicatePhoneError",
     "CommandError",
 ]
-
-

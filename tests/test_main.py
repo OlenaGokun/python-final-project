@@ -15,6 +15,7 @@ def test_main_dispatches_greeting_and_exit_through_registry(monkeypatch, capsys)
     main()
 
     output = capsys.readouterr().out
+    assert "Welcome to Personal Helper Bot!" in output
     assert "How can I help you?" in output
     assert "Good bye!" in output
     assert len(saves) == 1

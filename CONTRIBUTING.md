@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is an address book application that stores contacts with phone numbers and birthdays. Users interact with it via a command-line interface. Data is automatically saved to the user's system when they quit.
+Personal Helper Bot is a command-line application that stores contacts with phone numbers and birthdays. Data is automatically saved to the user's system when they quit.
 
 ## Architecture Overview
 
@@ -195,8 +195,9 @@ tests/
 ├── address_book/
 │   ├── models/          # Mirrors src/models/
 │   ├── commands/        # Mirrors src/commands/
-│   └── test_*.py        # Infrastructure tests
-└── test_pickle_manager.py
+│   ├── core/            # Infrastructure tests, including persistence
+│   └── test_*.py        # Registry and integration tests
+└── test_main.py         # Application entry point tests
 ```
 
 This mirrored structure makes it easy to find and write tests for new code.
