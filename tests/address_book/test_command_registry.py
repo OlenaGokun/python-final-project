@@ -1,6 +1,7 @@
 """Unit tests for CommandRegistry discovery, validation, and retrieval."""
 
 from types import ModuleType
+from pkgutil import ModuleInfo
 
 import pytest
 import address_book.command_registry as command_registry_module
@@ -17,7 +18,7 @@ def _registry_for_commands(monkeypatch, *command_classes):
     monkeypatch.setattr(
         command_registry_module.pkgutil,
         "iter_modules",
-        lambda _: [(None, "test_commands", False)],
+        lambda _: [ModuleInfo(None, "test_commands", False)],
     )
     monkeypatch.setattr(
         command_registry_module.importlib,
@@ -62,7 +63,7 @@ def test_discovers_commands_and_returns_them_by_name():
         "show-birthday",
         "birthdays",
         "change",
-        "close",
+        "exit",
         "help",
         "hello",
         "phone",
@@ -70,7 +71,54 @@ def test_discovers_commands_and_returns_them_by_name():
     assert isinstance(registry.get_command("add"), BaseCommand)
     assert registry.get_command("not-a-command") is None
     assert len(registry.get_all_commands()) == len(registry.commands)
-    assert registry.get_command("exit") is registry.get_command("close")
+    assert registry.get_command("exit") is not None
+    assert registry.get_command("close") is None
+
+
+def test_ignores_imported_and_abstract_command_classes(monkeypatch):
+    module = ModuleType("address_book.commands.test_commands")
+    imported = _command_class("ImportedCommand", "imported")
+    abstract = type("AbstractCommand", (BaseCommand,), {"__module__": module.__name__})
+    module.ImportedCommand = imported
+    module.AbstractCommand = abstract
+
+    monkeypatch.setattr(
+        command_registry_module.pkgutil, "iter_modules",
+        lambda _: [ModuleInfo(None, "test_commands", False)],
+    )
+    monkeypatch.setattr(
+        command_registry_module.importlib, "import_module", lambda _: module
+    )
+
+    with pytest.raises(RuntimeError, match="No commands were discovered"):
+        CommandRegistry()
+
+
+def test_fails_when_no_command_modules_are_found(monkeypatch):
+    monkeypatch.setattr(command_registry_module.pkgutil, "iter_modules", lambda _: [])
+
+    with pytest.raises(RuntimeError, match="No commands were discovered"):
+        CommandRegistry()
+
+
+@pytest.mark.parametrize("error", [ImportError("broken module"), RuntimeError("broken module")])
+def test_failed_module_import_stops_registry_initialization(monkeypatch, error):
+    imported_modules = []
+    def import_module(name):
+        imported_modules.append(name)
+        raise error
+
+    monkeypatch.setattr(
+        command_registry_module.pkgutil, "iter_modules",
+        lambda _: [ModuleInfo(None, "bad", False), ModuleInfo(None, "good", False)],
+    )
+    monkeypatch.setattr(command_registry_module.importlib, "import_module", import_module)
+
+    with pytest.raises(type(error), match="broken module") as exc_info:
+        CommandRegistry()
+
+    assert exc_info.value is error
+    assert imported_modules == ["address_book.commands.bad"]
 
 
 @pytest.mark.parametrize("command_name", ["", "   "])
@@ -81,12 +129,32 @@ def test_rejects_empty_command_name(monkeypatch, command_name):
         _registry_for_commands(monkeypatch, command_class)
 
 
-@pytest.mark.parametrize("command_name", ["two words", "Uppercase"])
+@pytest.mark.parametrize("command_name", [None, 42])
+def test_rejects_non_string_command_name(monkeypatch, command_name):
+    command_class = _command_class("InvalidCommand", command_name)
+
+    with pytest.raises(ValueError, match="non-empty name"):
+        _registry_for_commands(monkeypatch, command_class)
+
+
+@pytest.mark.parametrize(
+    "command_name",
+    ["two words", "Uppercase", "leading ", "\ttab", "straße"],
+)
 def test_rejects_command_names_with_invalid_format(monkeypatch, command_name):
     command_class = _command_class("InvalidCommand", command_name)
 
     with pytest.raises(ValueError, match="lowercase and contain no whitespace"):
         _registry_for_commands(monkeypatch, command_class)
+
+
+@pytest.mark.parametrize("command_name", ["simple", "add-birthday", "help2"])
+def test_registers_valid_command_name(monkeypatch, command_name):
+    command_class = _command_class("ValidCommand", command_name)
+
+    registry = _registry_for_commands(monkeypatch, command_class)
+
+    assert isinstance(registry.get_command(command_name), command_class)
 
 
 def test_rejects_duplicate_command_names(monkeypatch):
@@ -97,29 +165,11 @@ def test_rejects_duplicate_command_names(monkeypatch):
         _registry_for_commands(monkeypatch, first, second)
 
 
-def test_rejects_duplicate_aliases(monkeypatch):
-    first = _command_class("FirstCommand", "first")
-    second = _command_class("SecondCommand", "second")
-    first.get_aliases = lambda self: ("shared",)
-    second.get_aliases = lambda self: ("shared",)
+def test_discovered_commands_have_help_text():
+    registry = CommandRegistry()
 
-    with pytest.raises(ValueError, match="Duplicate command name or alias"):
-        _registry_for_commands(monkeypatch, first, second)
-
-
-@pytest.mark.parametrize(
-    ("description", "usage", "invalid_metadata"),
-    [
-        ("", "test", "description"),
-        ("A test command", " ", "usage"),
-    ],
-)
-def test_rejects_empty_command_metadata(
-    monkeypatch, description, usage, invalid_metadata
-):
-    command_class = _command_class(
-        "InvalidCommand", "test", description=description, usage=usage
-    )
-
-    with pytest.raises(ValueError, match=f"non-empty {invalid_metadata}"):
-        _registry_for_commands(monkeypatch, command_class)
+    for command in registry.get_all_commands():
+        description = command.get_description()
+        usage = command.get_usage()
+        assert isinstance(description, str) and description.strip()
+        assert isinstance(usage, str) and usage.strip()

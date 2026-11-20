@@ -41,10 +41,6 @@ class BaseCommand(ABC):
         """Return usage example (e.g., 'add <name> [phone]')"""
         pass
 
-    def get_aliases(self) -> tuple[str, ...]:
-        """Return alternate names accepted for this command."""
-        return ()
-
     def set_registry(self, registry: CommandRegistry) -> None:
         """Receive the registry after all commands have been registered."""
 

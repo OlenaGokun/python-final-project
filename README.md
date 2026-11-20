@@ -5,11 +5,10 @@ A command-line application for managing contacts with phone numbers and birthday
 ## Features
 
 - Store and manage contacts
-- Add, update, and delete phone numbers
+- Add phone numbers and change existing ones
 - Track birthdays and get reminders
 - Interactive help system
 - Automatic data persistence
-- Full test coverage
 
 ## Instructions
 
@@ -23,8 +22,8 @@ cd python-final-project
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
+# Install the application
+python -m pip install .
 ```
 
 ### Run the Application
@@ -39,32 +38,28 @@ personal-helper-bot
 
 The `personal-helper-bot` command is now available after installation.
 
-**Alternative methods (if you skip the installation):**
+**Run from the source tree without installing the application:**
 ```bash
-# Run directly from src/
-cd src
-python3 main.py
-
-# Or set PYTHONPATH and run from project root
-PYTHONPATH=src python3 src/main.py
+# From the project root
+python src
 ```
 
 ### Run Tests
 
+For development, install the project with its test dependencies:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
 ```bash
 # Run all tests
-pytest tests/
+python -m pytest
+```
 
-# Run model tests (domain layer)
-pytest tests/address_book/models/ -v
+For coverage, install the separate `coverage` package and run:
 
-# Run command tests (application layer)
-pytest tests/address_book/commands/ -v
-
-# Run infrastructure tests
-pytest tests/address_book/test_*.py -v
-
-# Install coverage once (if not already installed)
+```bash
 python -m pip install coverage
 
 # Run tests with branch coverage
@@ -89,16 +84,16 @@ python -m coverage html
 - `add-birthday <name> <DD.MM.YYYY>` — Add a birthday for a contact
 - `show-birthday <name>` — Show birthday for a contact
 - `birthdays` — Show upcoming birthdays in the next 7 days
-- `close` / `exit` — Quit the program
+- `exit` — Quit the program
 
 ### Interactive Help
 
 The application includes an interactive help system:
 
-```bash
-help              # List all available commands
-help add          # Show details for the 'add' command
-help add-birthday # Show details for the 'add-birthday' command
+```text
+Enter a command: help
+Enter a command: help add
+Enter a command: help add-birthday
 ```
 
 ### Data storage
@@ -111,12 +106,17 @@ Contacts are saved in a pickle file when you quit the application:
 | macOS   | `~/Library/Application Support/personal-helper-bot/addressbook.pkl` |
 | Linux   | `$XDG_DATA_HOME/personal-helper-bot/addressbook.pkl` (default `~/.local/share/personal-helper-bot/addressbook.pkl`) |
 
-Saving is atomic: the file is written to a temporary file first and then swapped in, so a crash can't corrupt existing data.
+On exit, the application writes to a temporary file and atomically replaces the
+existing file. If saving fails, it asks whether to exit without saving.
+
+The file uses Python's pickle format. Only load files from trusted sources;
+unpickling untrusted data can execute arbitrary code.
 
 ### Requirements
 
 - Python 3.10+
-- No external dependencies (testing requires pytest)
+- Runtime dependency: `colorama` (installed automatically with the application)
+- Tests require `pytest`; coverage reports additionally require `coverage`
 
 ## Architecture & Design Patterns
 

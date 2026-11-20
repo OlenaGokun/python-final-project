@@ -26,12 +26,13 @@ def test_print_commands_uses_registry_for_every_command(capsys):
 
     output = capsys.readouterr().out
     assert "hello" in output
-    assert "close | exit" in output
+    assert "exit" in output
+    assert "close" not in output
     assert "add <name> [phone]" in output
 
 
 def test_main_handles_empty_unknown_and_failing_commands(monkeypatch, capsys):
-    inputs = iter(["", "unknown", "boom", "exit"])
+    inputs = iter(["", "close", "boom", "exit"])
     saves = []
 
     class ExplodingCommand:
@@ -63,7 +64,7 @@ def test_main_handles_empty_unknown_and_failing_commands(monkeypatch, capsys):
 def test_main_retries_after_save_failure_and_invalid_confirmation(
     monkeypatch, capsys
 ):
-    inputs = iter(["close", "maybe", "no", "close", "yes"])
+    inputs = iter(["exit", "maybe", "no", "exit", "yes"])
     save_attempts = []
 
     def fail_to_save(book):

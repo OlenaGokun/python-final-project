@@ -49,10 +49,11 @@ class TestHelpCommand:
         assert "📖" in result
         assert "How can I help you?" in registry.get_command("hello").run([], book)
 
-    def test_help_exit_alias(self, registry, book):
+    def test_help_exit_command(self, registry, book):
         result = registry.get_command("help").run(["exit"], book)
 
-        assert "close | exit" in result
+        assert "Help for 'exit' command" in result
+        assert "Usage:       exit" in result
 
 # ============================================================================
 # FACTORY TESTS

@@ -6,17 +6,8 @@ Personal Helper Bot is a command-line application that stores contacts with phon
 
 ## Architecture Overview
 
-The project follows a **3-layer architecture**:
-
-```
-Domain Layer (models/)      ← Business entities
-     ↓
-Application Layer (commands/)  ← Command implementations
-     ↓
-Infrastructure Layer (core/)   ← Utilities & error handling
-```
-
-For complete architecture details, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the application layers and command
+discovery.
 
 ## Where to Add New Commands
 
@@ -39,21 +30,22 @@ from address_book.core import input_error, InvalidInputError
 
 
 class MyCommand(BaseCommand):
-    """Your command description"""
-    
+    """Return a greeting."""
+
     def get_command_name(self) -> str:
         return "my-command"
     
     def get_description(self) -> str:
-        return "What this command does"
-    
+        return "greet a person"
+
     def get_usage(self) -> str:
-        return "my-command [args]"
-    
+        return "my-command <name>"
+
     @input_error
     def run(self, args: list, book: AddressBook) -> str:
-        # Your logic here
-        return "Success message"
+        if len(args) != 1:
+            raise InvalidInputError(f"Usage: {self.get_usage()}")
+        return f"Hello, {args[0]}!"
 ```
 
 ### 2. That's it!
@@ -64,22 +56,24 @@ The registry automatically:
 - Discovers `MyCommand` via class inheritance scanning
 - Registers it and makes it available in the help menu
 
-**No need to edit any other files or use decorators!**
+No manual registration or registration decorator is needed. The name must be
+non-empty, case-folded, free of whitespace, and unique. Command classes must be
+concrete, defined in a module directly under `commands/`, and instantiable
+without arguments.
 
 Commands that need access to the complete command list can override
 `set_registry(self, registry)`; the registry calls it after discovery finishes.
 The built-in `help` command uses this hook rather than creating a second registry.
 
-Alternate command names can be returned from `get_aliases()`, which defaults to
-an empty tuple. Commands that request application shutdown should return
-`ExitRequest`; the application remains responsible for saving data and exiting.
+Commands that request application shutdown should return `ExitRequest`; the
+application remains responsible for saving data and exiting.
 
 ## Error Handling
 
 Custom exceptions are defined in `src/address_book/core/exceptions.py`:
 
 ```python
-from address_book.core import input_error, InvalidInputError, CommandError
+from address_book.core import input_error, InvalidInputError
 
 @input_error  # This decorator catches errors and formats them nicely
 def run(self, args, book):
@@ -88,56 +82,34 @@ def run(self, args, book):
     # ... rest of command
 ```
 
-The `@input_error` decorator will:
-- Catch your exceptions
-- Display a friendly message with emoji indicator (✅ or ❌)
-- Include helpful hints about correct usage
-- Let the app continue running
+The `@input_error` decorator returns formatted messages for `CommandError`
+subclasses and unexpected exceptions. Include usage hints in the exception
+message when appropriate. Decorators are optional; the main loop also reports
+exceptions that escape a command.
 
 ## Testing
 
-### Run Tests
-
-```bash
-# All tests
-pytest tests/
-
-# Model tests (domain layer)
-pytest tests/address_book/models/ -v
-
-# Command tests (application layer)
-pytest tests/address_book/commands/ -v
-
-# Infrastructure tests
-pytest tests/address_book/test_command_registry.py tests/address_book/test_error_messages.py -v
-
-# Specific test file
-pytest tests/address_book/commands/test_add_contact.py -v
-```
+See [README.md](README.md#run-tests) for setup, test, and coverage commands.
 
 ### Write Tests for Your New Command
 
 Create `tests/address_book/commands/test_my_command.py`:
 
 ```python
-import pytest
-from address_book.commands.my_command import MyCommand
-
 class TestMyCommand:
     """Tests for my-command"""
     
     def test_my_command_success(self, registry, book):
         cmd = registry.get_command("my-command")
-        result = cmd.run(["arg1", "arg2"], book)
+        result = cmd.run(["arg1"], book)
         
-        assert "expected text" in result
-        assert "✅" in result
+        assert result == "Hello, arg1!"
     
     def test_my_command_error(self, registry, book):
         cmd = registry.get_command("my-command")
         result = cmd.run([], book)
         
-        assert "❌" in result
+        assert result == "❌ Usage: my-command <name>"
 ```
 
 **Note:** Use the shared `registry` and `book` fixtures from `tests/conftest.py` - no need to define them in every test file!
@@ -179,7 +151,7 @@ def get_usage(self) -> str:
     return "updated-command [new-args]"
 ```
 
-For the source and test directory structure, see [Project Structure in ARCHITECTURE.md](ARCHITECTURE.md#project-structure).
+For the source directory structure, see [Project Structure in ARCHITECTURE.md](ARCHITECTURE.md#project-structure).
 
 ## Data Storage
 
