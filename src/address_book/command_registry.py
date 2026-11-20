@@ -12,98 +12,45 @@ class CommandRegistry:
 
     def __init__(self) -> None:
         self.commands: dict[str, BaseCommand] = {}
-        self._aliases: dict[str, BaseCommand] = {}
         self._load_all_commands()
         for command in self.commands.values():
             command.set_registry(self)
 
     def _load_all_commands(self) -> None:
-        """Find all command modules and extract BaseCommand subclasses.
-        
-        Scans each module in the commands package for classes that inherit from
-        BaseCommand, instantiates them, and registers them by command name.
-        """
-        commands_path = commands_module.__path__
+        """Discover and register concrete commands defined in the package."""
+        for module_info in pkgutil.iter_modules(commands_module.__path__):
+            module_name = f"{commands_module.__name__}.{module_info.name}"
+            module = importlib.import_module(module_name)
 
-        # Step 1: Import all command modules
-        for importer, name, is_pkg in pkgutil.iter_modules(commands_path):
-            module_name = f'address_book.commands.{name}'
-            try:
-                module = importlib.import_module(module_name)
-            except Exception as e:
-                print(f"Warning: Failed to load command module '{module_name}': {e}")
-                continue
-
-            # Step 2: Scan this module for concrete BaseCommand subclasses.
-            for _, item in inspect.getmembers(module, inspect.isclass):
+            for _, cls in inspect.getmembers(module, inspect.isclass):
                 if (
-                    item.__module__ != module.__name__
-                    or not issubclass(item, BaseCommand)
-                    or inspect.isabstract(item)
+                    cls.__module__ == module.__name__
+                    and issubclass(cls, BaseCommand)
+                    and not inspect.isabstract(cls)
                 ):
-                    continue
+                    self._register_command(cls())
 
-                instance = item()
-                command_name = instance.get_command_name()
-                if not isinstance(command_name, str) or not command_name.strip():
-                    raise ValueError(
-                        f"Command {item.__qualname__} must have a non-empty name"
-                    )
-                if (
-                    command_name != command_name.casefold()
-                    or any(character.isspace() for character in command_name)
-                ):
-                    raise ValueError(
-                        f"Command name {command_name!r} must be lowercase "
-                        "and contain no whitespace"
-                    )
-                if command_name in self.commands or command_name in self._aliases:
-                    raise ValueError(f"Duplicate command name: {command_name!r}")
+        if not self.commands:
+            raise RuntimeError("No commands were discovered in address_book.commands")
 
-                for metadata_name, metadata in (
-                    ("description", instance.get_description()),
-                    ("usage", instance.get_usage()),
-                ):
-                    if not isinstance(metadata, str) or not metadata.strip():
-                        raise ValueError(
-                            f"Command {command_name!r} must have a non-empty "
-                            f"{metadata_name}"
-                        )
+    def _register_command(self, command: BaseCommand) -> None:
+        name = command.get_command_name()
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(
+                f"Command {type(command).__qualname__} must have a non-empty name"
+            )
+        if name != name.casefold() or any(character.isspace() for character in name):
+            raise ValueError(
+                f"Command name {name!r} must be lowercase and contain no whitespace"
+            )
+        if name in self.commands:
+            raise ValueError(f"Duplicate command name: {name!r}")
 
-                aliases = instance.get_aliases()
-                if not isinstance(aliases, tuple):
-                    raise ValueError(
-                        f"Aliases for command {command_name!r} must be a tuple"
-                    )
-                aliases_seen: set[str] = set()
-                for alias in aliases:
-                    if not isinstance(alias, str) or not alias.strip():
-                        raise ValueError(
-                            f"Command {command_name!r} has an empty alias"
-                        )
-                    if (
-                        alias != alias.casefold()
-                        or any(character.isspace() for character in alias)
-                    ):
-                        raise ValueError(
-                            f"Command alias {alias!r} must be lowercase "
-                            "and contain no whitespace"
-                        )
-                    if (
-                        alias == command_name
-                        or alias in self.commands
-                        or alias in self._aliases
-                        or alias in aliases_seen
-                    ):
-                        raise ValueError(f"Duplicate command name or alias: {alias!r}")
-                    aliases_seen.add(alias)
-
-                self.commands[command_name] = instance
-                self._aliases.update({alias: instance for alias in aliases})
+        self.commands[name] = command
 
     def get_command(self, name: str) -> BaseCommand | None:
         """Get a command by name, return None if not found"""
-        return self.commands.get(name) or self._aliases.get(name)
+        return self.commands.get(name)
 
     def get_all_commands(self) -> ValuesView[BaseCommand]:
         """Get all registered commands"""
