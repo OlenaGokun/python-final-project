@@ -5,18 +5,18 @@ import sys
 import tempfile
 from pathlib import Path
 
-from address_book.book import AddressBook
+from address_book.models.book import AddressBook
 
-APP_NAME = "phone-book-bot"
+APP_NAME = "personal-helper-bot"
 DATA_FILENAME = "addressbook.pkl"
 
 
 def get_data_dir() -> Path:
     """Per-user data directory, following each OS's convention.
 
-    Windows: %APPDATA%\\phone-book-bot
-    macOS:   ~/Library/Application Support/phone-book-bot
-    Linux:   $XDG_DATA_HOME/phone-book-bot (default ~/.local/share/phone-book-bot)
+    Windows: %APPDATA%\\personal-helper-bot
+    macOS:   ~/Library/Application Support/personal-helper-bot
+    Linux:   $XDG_DATA_HOME/personal-helper-bot (default ~/.local/share/personal-helper-bot)
     """
     if sys.platform == "win32":
         appdata = os.environ.get("APPDATA")

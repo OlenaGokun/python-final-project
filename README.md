@@ -1,8 +1,14 @@
-# goit-pycore-hw-08
+# Personal Helper Bot
 
-Advanced address book with birthdays, CLI commands, object serialization (pickle), and comprehensive unit tests.
+A command-line application for managing contacts with phone numbers and birthdays.
 
-Built on OOP entities: `Field`, `Name`, `Phone`, `Birthday`, `Record`, and `AddressBook` with a command-line interface and support for pickle serialization.
+## Features
+
+- Store and manage contacts
+- Add phone numbers and change existing ones
+- Track birthdays and get reminders
+- Interactive help system
+- Automatic data persistence
 
 ## Instructions
 
@@ -10,38 +16,66 @@ Built on OOP entities: `Field`, `Name`, `Phone`, `Birthday`, `Record`, and `Addr
 
 ```bash
 # Enter the project directory
-cd goit-pycore-hw-08
+cd python-final-project
 
 # Create virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
+# Install the application
+python -m pip install .
 ```
 
 ### Run the Application
 
 ```bash
-# Start the CLI assistant
-python3 -m hw08
+# Activate virtual environment (if not already active)
+source .venv/bin/activate
+
+# Run the application
+personal-helper-bot
+```
+
+The `personal-helper-bot` command is now available after installation.
+
+**Run from the source tree without installing the application:**
+```bash
+# From the project root
+python src
 ```
 
 ### Run Tests
 
+For development, install the project with its test dependencies:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
 ```bash
 # Run all tests
-pytest
+python -m pytest
+```
 
-# Run specific test file
-pytest tests/address_book/test_birthday.py -v
+For coverage, install the separate `coverage` package and run:
 
-# Run specific test class
-pytest tests/address_book/test_commands.py::TestAddContactCommand -v
+```bash
+python -m pip install coverage
+
+# Run tests with branch coverage
+python -m coverage run --branch --source=src -m pytest
+
+# Show coverage summary and uncovered lines
+python -m coverage report -m
+
+# Optional: generate an HTML report in htmlcov/
+python -m coverage html
 ```
 
 ### Available Commands
 
+- `help` — Show all available commands
+- `help <command>` — Show details for a specific command
 - `hello` — Get a greeting from the bot
 - `add <name> [phone]` — Add a new contact or add phone to existing (phone is optional)
 - `change <name> <old_phone> <new_phone>` — Change phone number for a contact
@@ -50,21 +84,42 @@ pytest tests/address_book/test_commands.py::TestAddContactCommand -v
 - `add-birthday <name> <DD.MM.YYYY>` — Add a birthday for a contact
 - `show-birthday <name>` — Show birthday for a contact
 - `birthdays` — Show upcoming birthdays in the next 7 days
-- `close` / `exit` — Quit the program
+- `exit` — Quit the program
+
+### Interactive Help
+
+The application includes an interactive help system:
+
+```text
+Enter a command: help
+Enter a command: help add
+Enter a command: help add-birthday
+```
 
 ### Data storage
 
-The address book is saved on exit (including Ctrl+C / Ctrl+D) to a per-user folder:
+Contacts are saved in a pickle file when you quit the application:
 
-| OS      | Location                                                         |
-|---------|------------------------------------------------------------------|
-| Windows | `%APPDATA%\phone-book-bot\addressbook.pkl`                       |
-| macOS   | `~/Library/Application Support/phone-book-bot/addressbook.pkl`   |
-| Linux   | `$XDG_DATA_HOME/phone-book-bot/addressbook.pkl` (default `~/.local/share/...`) |
+| OS      | Location                                                      |
+|---------|---------------------------------------------------------------|
+| Windows | `%APPDATA%\personal-helper-bot\addressbook.pkl` |
+| macOS   | `~/Library/Application Support/personal-helper-bot/addressbook.pkl` |
+| Linux   | `$XDG_DATA_HOME/personal-helper-bot/addressbook.pkl` (default `~/.local/share/personal-helper-bot/addressbook.pkl`) |
 
-Saving is atomic: the file is written to a temporary file first and then swapped in, so a crash can't corrupt existing data.
+On exit, the application writes to a temporary file and atomically replaces the
+existing file. If saving fails, it asks whether to exit without saving.
+
+The file uses Python's pickle format. Only load files from trusted sources;
+unpickling untrusted data can execute arbitrary code.
 
 ### Requirements
 
 - Python 3.10+
-- No external dependencies
+- Runtime dependency: `colorama` (installed automatically with the application)
+- Tests require `pytest`; coverage reports additionally require `coverage`
+
+## Architecture & Design Patterns
+
+This project uses a modular command-based architecture where each command is a separate class. Commands are automatically discovered and registered when the app starts.
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the app works and [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to add new commands.

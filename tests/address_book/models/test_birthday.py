@@ -1,7 +1,7 @@
 import unittest
 from datetime import date
-from address_book.fields import Birthday
-
+from address_book.models.fields import Birthday
+from address_book.core import InvalidBirthdayFormatError
 
 class TestBirthday(unittest.TestCase):
     def test_accepts_valid_date_format(self):
@@ -16,20 +16,20 @@ class TestBirthday(unittest.TestCase):
         self.assertIsInstance(birthday.value, date)
 
     def test_invalid_format_raises_error(self):
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(InvalidBirthdayFormatError) as context:
             Birthday("1990-03-15")
         self.assertIn("DD.MM.YYYY", str(context.exception))
 
     def test_invalid_date_raises_error(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidBirthdayFormatError):
             Birthday("32.13.2000")  # Invalid month and day
 
     def test_empty_string_raises_error(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidBirthdayFormatError):
             Birthday("")
 
     def test_non_string_raises_error(self):
-        with self.assertRaises((ValueError, TypeError)):
+        with self.assertRaises(InvalidBirthdayFormatError):
             Birthday(None)
 
     def test_feb_29_in_leap_year(self):
@@ -37,14 +37,13 @@ class TestBirthday(unittest.TestCase):
         self.assertEqual(birthday.value, date(2000, 2, 29))
 
     def test_invalid_feb_29_in_non_leap_year(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidBirthdayFormatError):
             Birthday("29.02.2001")
 
     def test_error_message_format(self):
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(InvalidBirthdayFormatError) as context:
             Birthday("invalid")
         self.assertEqual(str(context.exception), "Invalid date format. Use DD.MM.YYYY")
-
 
 class TestBirthdayEquality(unittest.TestCase):
     def test_equal_birthdays(self):
@@ -61,7 +60,6 @@ class TestBirthdayEquality(unittest.TestCase):
         b1 = Birthday("15.03.1990")
         b2 = Birthday("15.03.1990")
         self.assertEqual(len({b1, b2}), 1)
-
 
 if __name__ == "__main__":
     unittest.main()

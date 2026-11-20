@@ -1,8 +1,8 @@
 import unittest
 from datetime import date, timedelta
-from address_book.book import AddressBook
-from address_book.record import Record
-
+from address_book.models.book import AddressBook
+from address_book.models.record import Record
+from address_book.core import DuplicateContactError
 
 class TestGetUpcomingBirthdays(unittest.TestCase):
     def setUp(self):
@@ -61,7 +61,6 @@ class TestGetUpcomingBirthdays(unittest.TestCase):
         if result:
             self.assertIn("congratulation_date", result[0])
 
-
 class TestBirthdayInYear(unittest.TestCase):
     def test_normal_date(self):
         birthday = date(1992, 3, 15)
@@ -77,7 +76,6 @@ class TestBirthdayInYear(unittest.TestCase):
         birthday = date(2000, 2, 29)
         result = AddressBook._birthday_in_year(birthday, 2001)
         self.assertEqual(result, date(2001, 2, 28))
-
 
 class TestNextBirthday(unittest.TestCase):
     def test_future_birthday_this_year(self):
@@ -104,7 +102,6 @@ class TestNextBirthday(unittest.TestCase):
         result = AddressBook._next_birthday(birthday, today)
         self.assertEqual(result, today)
 
-
 class TestAddRecordDuplicate(unittest.TestCase):
     def test_duplicate_name_raises_error(self):
         book = AddressBook()
@@ -115,7 +112,7 @@ class TestAddRecordDuplicate(unittest.TestCase):
         record2 = Record("John")
         record2.add_phone("9999999999")
         
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(DuplicateContactError) as context:
             book.add_record(record2)
         self.assertIn("already exists", str(context.exception))
 
@@ -130,7 +127,6 @@ class TestAddRecordDuplicate(unittest.TestCase):
         book.add_record(record2)
         
         self.assertEqual(len(book), 2)
-
 
 class TestRecordWithBirthday(unittest.TestCase):
     def test_str_includes_birthday(self):
@@ -161,7 +157,6 @@ class TestRecordWithBirthday(unittest.TestCase):
         record.add_phone("1234567890")
         result = repr(record)
         self.assertNotIn("birthday", result)
-
 
 if __name__ == "__main__":
     unittest.main()

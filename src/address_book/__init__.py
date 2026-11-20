@@ -1,5 +1,46 @@
-from address_book.fields import Field, Name, Phone, Birthday
-from address_book.record import Record
-from address_book.book import AddressBook
+"""Personal Helper Bot's address book and command system."""
 
-__all__ = ["Field", "Name", "Phone", "Birthday", "Record", "AddressBook"]
+# Domain models
+from address_book.models import AddressBook, Record, Field, Name, Phone, Birthday
+
+# Commands
+from address_book.command_registry import CommandRegistry
+
+# Infrastructure
+from address_book.core import (
+    parse_input,
+    input_error,
+    InvalidInputError,
+    InvalidNameError,
+    InvalidPhoneFormatError,
+    InvalidBirthdayFormatError,
+    ContactNotFoundError,
+    DuplicateContactError,
+    PhoneNotFoundError,
+    DuplicatePhoneError,
+    CommandError,
+)
+
+__all__ = [
+    # Models
+    "AddressBook",
+    "Record",
+    "Field",
+    "Name",
+    "Phone",
+    "Birthday",
+    # Commands
+    "CommandRegistry",
+    # Infrastructure
+    "parse_input",
+    "input_error",
+    "InvalidInputError",
+    "InvalidNameError",
+    "InvalidPhoneFormatError",
+    "InvalidBirthdayFormatError",
+    "ContactNotFoundError",
+    "DuplicateContactError",
+    "PhoneNotFoundError",
+    "DuplicatePhoneError",
+    "CommandError",
+]

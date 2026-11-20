@@ -4,41 +4,39 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import pickle_manager
-from pickle_manager import get_data_dir, load_data, save_data
-from address_book.book import AddressBook
-from address_book.record import Record
-
+import address_book.core.pickle_manager as pickle_manager
+from address_book.core.pickle_manager import get_data_dir, load_data, save_data
+from address_book.models.book import AddressBook
+from address_book.models.record import Record
 
 class TestGetDataDir(unittest.TestCase):
     def test_windows_uses_appdata(self):
         with mock.patch.object(pickle_manager.sys, "platform", "win32"), \
                 mock.patch.dict(os.environ, {"APPDATA": r"C:\Users\u\AppData\Roaming"}):
-            self.assertEqual(get_data_dir(), Path(r"C:\Users\u\AppData\Roaming") / "phone-book-bot")
+            self.assertEqual(get_data_dir(), Path(r"C:\Users\u\AppData\Roaming") / "personal-helper-bot")
 
     def test_macos_uses_application_support(self):
         with mock.patch.object(pickle_manager.sys, "platform", "darwin"):
             self.assertEqual(
                 get_data_dir(),
-                Path.home() / "Library" / "Application Support" / "phone-book-bot",
+                Path.home() / "Library" / "Application Support" / "personal-helper-bot",
             )
 
     def test_linux_uses_xdg_data_home(self):
         with mock.patch.object(pickle_manager.sys, "platform", "linux"), \
                 mock.patch.dict(os.environ, {"XDG_DATA_HOME": "/xdg/data"}):
-            self.assertEqual(get_data_dir(), Path("/xdg/data/phone-book-bot"))
+            self.assertEqual(get_data_dir(), Path("/xdg/data/personal-helper-bot"))
 
     def test_linux_falls_back_to_local_share(self):
         env = {k: v for k, v in os.environ.items() if k != "XDG_DATA_HOME"}
         with mock.patch.object(pickle_manager.sys, "platform", "linux"), \
                 mock.patch.dict(os.environ, env, clear=True):
-            self.assertEqual(get_data_dir(), Path.home() / ".local" / "share" / "phone-book-bot")
+            self.assertEqual(get_data_dir(), Path.home() / ".local" / "share" / "personal-helper-bot")
 
     def test_linux_ignores_relative_xdg_data_home(self):
         with mock.patch.object(pickle_manager.sys, "platform", "linux"), \
                 mock.patch.dict(os.environ, {"XDG_DATA_HOME": "relative/dir"}):
-            self.assertEqual(get_data_dir(), Path.home() / ".local" / "share" / "phone-book-bot")
-
+            self.assertEqual(get_data_dir(), Path.home() / ".local" / "share" / "personal-helper-bot")
 
 class TestSaveLoad(unittest.TestCase):
     def setUp(self):
@@ -87,7 +85,6 @@ class TestSaveLoad(unittest.TestCase):
             save_data(self._book())
             self.assertTrue((self.dir / "app" / "addressbook.pkl").exists())
             self.assertIsNotNone(load_data().find("john"))
-
 
 if __name__ == "__main__":
     unittest.main()
