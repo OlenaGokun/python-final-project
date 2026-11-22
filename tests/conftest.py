@@ -1,14 +1,19 @@
 """Shared pytest fixtures for all tests"""
 
 import pytest
-from address_book.models import AddressBook, Record
-from address_book.command_registry import CommandRegistry
+from personal_helper.models import AddressBook, PersonalHelper, Record
+from personal_helper.command_registry import CommandRegistry
 
 
 @pytest.fixture
 def book():
     """Create a fresh address book for each test"""
     return AddressBook()
+
+
+@pytest.fixture
+def data():
+    return PersonalHelper()
 
 
 @pytest.fixture

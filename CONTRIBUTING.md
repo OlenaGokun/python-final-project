@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal Helper Bot is a command-line application that stores contacts with phone numbers and birthdays. Data is automatically saved to the user's system when they quit.
+Personal Helper Bot is a command-line application that stores contacts with phone numbers and birthdays, as well as independent notes. Data is automatically saved to the user's system when they quit.
 
 ## Architecture Overview
 
@@ -11,7 +11,7 @@ discovery.
 
 ## Where to Add New Commands
 
-Commands are located in `src/address_book/commands/`. Each command is a separate file.
+Commands are located in `src/personal_helper/commands/`. Each command is a separate file.
 
 For the complete project structure, see [`ARCHITECTURE.md`](ARCHITECTURE.md#project-structure).
 
@@ -21,12 +21,13 @@ Commands are organized as separate classes that inherit from `BaseCommand`. The 
 
 ### 1. Create a new command file
 
-Create `src/address_book/commands/my_command.py`:
+Create `src/personal_helper/commands/my_command.py`:
 
 ```python
-from address_book.models import AddressBook
-from address_book.commands.base_command import BaseCommand
-from address_book.core import input_error, InvalidInputError
+from personal_helper.models import PersonalHelper
+from personal_helper.commands.base_command import BaseCommand
+from personal_helper.core import input_error
+from personal_helper.core.data import parse_options
 
 
 class MyCommand(BaseCommand):
@@ -39,13 +40,12 @@ class MyCommand(BaseCommand):
         return "greet a person"
 
     def get_usage(self) -> str:
-        return "my-command <name>"
+        return "my-command --name <name>"
 
     @input_error
-    def run(self, args: list, book: AddressBook) -> str:
-        if len(args) != 1:
-            raise InvalidInputError(f"Usage: {self.get_usage()}")
-        return f"Hello, {args[0]}!"
+    def run(self, args: list, data: PersonalHelper) -> str:
+        options = parse_options(args, {"--name"}, {"--name"}, self.get_usage())
+        return f"Hello, {' '.join(options['--name'])}!"
 ```
 
 ### 2. That's it!
@@ -68,15 +68,27 @@ The built-in `help` command uses this hook rather than creating a second registr
 Commands that request application shutdown should return `ExitRequest`; the
 application remains responsible for saving data and exiting.
 
+For commands that need one collection, inherit from `AddressBookCommand` or
+`NotebookCommand` instead. Implement `run_with_address_book(self, args,
+address_book: AddressBook)` or `run_with_notebook(self, args, notebook:
+Notebook)` respectively, rather than `run`. Their base classes select the
+collection from `PersonalHelper` while keeping the main dispatch unchanged.
+Their `run` methods are marked `@final`: implement the collection-specific
+method instead of overriding `run`. Python type checkers enforce this, but
+Python itself does not prevent overriding at runtime.
+Use `BaseCommand` directly for commands such as `hello` that need neither
+collection, or for commands requiring both. Apply `@input_error` to the method
+you implement when formatted command errors are needed.
+
 ## Error Handling
 
-Custom exceptions are defined in `src/address_book/core/exceptions.py`:
+Custom exceptions are defined in `src/personal_helper/core/exceptions.py`:
 
 ```python
-from address_book.core import input_error, InvalidInputError
+from personal_helper.core import input_error, InvalidInputError
 
 @input_error  # This decorator catches errors and formats them nicely
-def run(self, args, book):
+def run(self, args, data):
     if len(args) < 2:
         raise InvalidInputError("Need at least 2 arguments")
     # ... rest of command
@@ -93,26 +105,26 @@ See [README.md](README.md#run-tests) for setup, test, and coverage commands.
 
 ### Write Tests for Your New Command
 
-Create `tests/address_book/commands/test_my_command.py`:
+Create `tests/personal_helper/commands/test_my_command.py`:
 
 ```python
 class TestMyCommand:
     """Tests for my-command"""
     
-    def test_my_command_success(self, registry, book):
+    def test_my_command_success(self, registry, data):
         cmd = registry.get_command("my-command")
-        result = cmd.run(["arg1"], book)
+        result = cmd.run(["--name", "arg1"], data)
         
         assert result == "Hello, arg1!"
     
-    def test_my_command_error(self, registry, book):
+    def test_my_command_error(self, registry, data):
         cmd = registry.get_command("my-command")
-        result = cmd.run([], book)
+        result = cmd.run([], data)
         
-        assert result == "❌ Usage: my-command <name>"
+        assert result.startswith("❌ Invalid arguments.")
 ```
 
-**Note:** Use the shared `registry` and `book` fixtures from `tests/conftest.py` - no need to define them in every test file!
+**Note:** Use the shared `registry` and `data` fixtures from `tests/conftest.py` - no need to define them in every test file!
 
 ## Common Tasks
 
@@ -120,7 +132,7 @@ class TestMyCommand:
 See "How Commands Work" section above.
 
 ### Add a new error type
-1. Add to `src/address_book/core/exceptions.py`:
+1. Add to `src/personal_helper/core/exceptions.py`:
    ```python
    class MyCustomError(CommandError):
        """Description of your error"""
@@ -128,7 +140,7 @@ See "How Commands Work" section above.
 
 2. Import and use in your command:
    ```python
-   from address_book.core import input_error, MyCustomError
+   from personal_helper.core import input_error, MyCustomError
    
    @input_error
    def run(self, args, book):
@@ -164,9 +176,9 @@ Tests are organized to mirror the source structure:
 ```
 tests/
 ├── conftest.py          # Shared fixtures (book, registry, etc.)
-├── address_book/
-│   ├── models/          # Mirrors src/models/
-│   ├── commands/        # Mirrors src/commands/
+├── personal_helper/
+│   ├── models/          # Mirrors src/personal_helper/models/
+│   ├── commands/        # Mirrors src/personal_helper/commands/
 │   ├── core/            # Infrastructure tests, including persistence
 │   └── test_*.py        # Registry and integration tests
 └── test_main.py         # Application entry point tests

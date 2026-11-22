@@ -1,8 +1,9 @@
 import pickle
 
-from address_book import parse_input, AddressBook, CommandRegistry
-from address_book.commands.base_command import ExitRequest
-from address_book.core.pickle_manager import load_data, save_data
+from personal_helper import parse_input, CommandRegistry
+from personal_helper.models import PersonalHelper
+from personal_helper.commands.base_command import ExitRequest
+from personal_helper.core.pickle_manager import load_data, save_data
 
 
 def print_commands(registry: CommandRegistry):
@@ -23,13 +24,13 @@ def print_commands(registry: CommandRegistry):
     print()
 
 
-def confirm_exit(book: AddressBook) -> bool:
-    """Save the book; if that fails, ask whether to quit anyway."""
+def confirm_exit(data: PersonalHelper) -> bool:
+    """Save application data; if that fails, ask whether to quit anyway."""
     try:
-        save_data(book)
+        save_data(data)
         return True
     except (OSError, pickle.PickleError) as e:
-        print(f"Failed to save address book: {e}")
+        print(f"Failed to save application data: {e}")
 
     while True:
         try:
@@ -47,7 +48,22 @@ def confirm_exit(book: AddressBook) -> bool:
 
 def main():
     registry = CommandRegistry()
-    book = load_data()
+    try:
+        data = load_data()
+    except (
+        OSError,
+        pickle.PickleError,
+        EOFError,
+        AttributeError,
+        ImportError,
+        IndexError,
+        TypeError,
+        ValueError,
+    ) as e:
+        print(f"Failed to load application data: {e}")
+        print("Starting with empty application data.")
+        data = PersonalHelper()
+
     print("Welcome to Personal Helper Bot!")
     print_commands(registry)
 
@@ -71,13 +87,13 @@ def main():
             continue
 
         try:
-            result = cmd.run(args, book)
+            result = cmd.run(args, data)
         except Exception as e:
             print(f"Error: {e}")
             continue
 
         if isinstance(result, ExitRequest):
-            if confirm_exit(book):
+            if confirm_exit(data):
                 print("Good bye!")
                 break
         else:
