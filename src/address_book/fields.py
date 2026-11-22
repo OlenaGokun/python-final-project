@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 
 
@@ -60,3 +61,14 @@ class Birthday(Field):
     def __str__(self):
         # Same format the user types it in.
         return self.value.strftime("%d.%m.%Y")
+
+class Email(Field):
+    EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+    def __init__(self, value):
+        if not isinstance(value, str):
+            raise ValueError(f"Invalid email format: {value!r}.")
+        cleaned = value.strip()
+        if not cleaned or not self.EMAIL_PATTERN.match(cleaned):
+            raise ValueError(f"Invalid email format: {value!r}.")
+        super().__init__(cleaned)
