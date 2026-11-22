@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "python_final_project"
+name = "personal-helper-bot"
 version = "0.1.0"
-description = "Python final project"
+description = "Personal helper bot for managing contacts"
 requires-python = ">=3.10"
 dependencies = [
     "colorama>=0.4.6",
@@ -13,6 +13,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+
+[project.scripts]
+personal-helper-bot = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
