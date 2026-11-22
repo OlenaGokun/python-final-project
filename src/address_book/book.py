@@ -85,4 +85,44 @@ class AddressBook(UserDict):
             return "Address book is empty."
         return "\n".join(str(record) for record in self.data.values())
 
-    
+    def search(self, query):
+        """Return list of records matching query (case-insensitive) across contact fields."""
+        if not isinstance(query, str):
+            return []
+
+        normalized_query = query.strip().casefold()
+        if not normalized_query:
+            return []
+
+        matches = []
+        for record in self.data.values():
+            parts = []
+
+            # Ім'я контакту
+            name_field = getattr(record, "name", None)
+            if name_field is not None:
+                parts.append(str(getattr(name_field, "value", name_field)))
+
+            # Телефони (очікується список об'єктів/рядків)
+            phones = getattr(record, "phones", None) or []
+            for phone in phones:
+                parts.append(str(getattr(phone, "value", phone)))
+
+            # Email (може бути None або об'єктом поля)
+            email_field = getattr(record, "email", None)
+            if email_field is not None:
+                parts.append(str(getattr(email_field, "value", email_field)))
+
+            # День народження
+            birthday_field = getattr(record, "birthday", None)
+            if birthday_field is not None:
+                bday_val = getattr(birthday_field, "value", birthday_field)
+                if hasattr(bday_val, "strftime"):
+                    parts.append(bday_val.strftime("%d.%m.%Y"))
+                else:
+                    parts.append(str(bday_val))
+
+            if any(normalized_query in part.casefold() for part in parts if part):
+                matches.append(record)
+
+        return matches

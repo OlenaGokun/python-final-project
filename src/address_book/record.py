@@ -1,4 +1,4 @@
-from address_book.fields import Name, Phone, Birthday
+from address_book.fields import Name, Phone, Birthday, Email
 
 
 class Record:
@@ -6,6 +6,7 @@ class Record:
         self._name = Name(name)
         self._phones = []
         self._birthday = None
+        self._email = None
 
     @property
     def name(self) -> Name:
@@ -19,6 +20,10 @@ class Record:
     @property
     def birthday(self) -> Birthday | None:
         return self._birthday
+
+    @property
+    def email(self) -> Email | None:
+        return getattr(self, "_email", None)
 
     def add_birthday(self, birthday):
         new_birthday = Birthday(birthday)
@@ -51,10 +56,17 @@ class Record:
     def find_phone(self, phone):
         return next((p for p in self._phones if p.value == phone), None)
 
+    def add_email(self, email):
+        new_email = Email(email)
+        self._email = new_email
+        return new_email
+
     def __str__(self):
         birthday_str = f", birthday: {self.birthday}" if self.birthday else ""
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}{birthday_str}"
+        email_str = f", email: {self.email}" if self.email else ""
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}{email_str}{birthday_str}"
 
     def __repr__(self):
         birthday_repr = f", birthday={self.birthday.value!r}" if self.birthday else ""
-        return f"Record({self.name.value!r}, phones={[p.value for p in self.phones]!r}{birthday_repr})"
+        email_repr = f", email={self.email.value!r}" if self.email else ""
+        return f"Record({self.name.value!r}, phones={[p.value for p in self.phones]!r}{email_repr}{birthday_repr})"

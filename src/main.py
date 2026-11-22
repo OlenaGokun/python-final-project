@@ -9,6 +9,8 @@ from address_book.commands.show_phone import show_phone
 from address_book.commands.add_birthday import add_birthday
 from address_book.commands.show_birthday import show_birthday
 from address_book.commands.show_birthdays import show_birthdays
+from address_book.commands.add_email import add_email
+from address_book.commands.search import search_contacts
 
 from address_book.book import AddressBook
 
@@ -21,6 +23,8 @@ COMMANDS = [
     ("add-birthday <name> <DD.MM.YYYY>", "add a birthday for a contact"),
     ("show-birthday <name>", "show birthday for a contact"),
     ("birthdays", "show upcoming birthdays in the next 7 days"),
+    ("add-email <name> <email>", "add or update email for a contact"),
+    ("search <query>", "search contacts by name, phone, email, or birthday"),
     ("close | exit", "quit the program"),
 ]
 
@@ -104,5 +108,14 @@ def main():
         elif command == "birthdays":
             print(show_birthdays(book))
 
+        elif command == "add-email":
+            print(add_email(args, book))
+
+        elif command == "search":
+            print(search_contacts(args, book))  
+
         else:
             print("Invalid command.")
+
+if __name__ == "__main__":
+    main()
