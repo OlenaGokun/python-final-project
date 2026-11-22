@@ -10,7 +10,7 @@ class TestShowBirthdaysCommand:
 
     def test_show_birthdays_empty(self, registry, book):
         """Return the empty-state message when no birthdays are upcoming."""
-        cmd = registry.get_command("birthdays")
+        cmd = registry.get_command("show-birthdays")
         result = cmd.run([], PersonalHelper(book))
 
         assert "ℹ️" in result
@@ -35,7 +35,7 @@ class TestShowBirthdaysCommand:
             record.add_birthday(birthday)
             book.add_record(record)
 
-        cmd = registry.get_command("birthdays")
+        cmd = registry.get_command("show-birthdays")
         result = cmd.run([], PersonalHelper(book))
 
         assert result == "🎂 Friday: 03.01.2025\n🎂 Saturday: 06.01.2025"

@@ -79,7 +79,7 @@ def test_registry_discovers_specialized_and_general_commands(registry):
         "show-all-contacts",
         "add-birthday",
         "show-birthday",
-        "birthdays",
+        "show-birthdays",
         "add-email",
         "search-contacts",
     ):

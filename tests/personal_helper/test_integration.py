@@ -22,7 +22,7 @@ class TestIntegration:
         assert "search-contacts" in run("help", ["--command", "search-contacts"])
         assert "Unknown command" in run("help", ["--command", "missing"])
         assert run("show-all-contacts") == "ℹ️  No contacts found."
-        assert run("birthdays") == "ℹ️  No upcoming birthdays in the next 7 days."
+        assert run("show-birthdays") == "ℹ️  No upcoming birthdays in the next 7 days."
 
         assert run("add-contact", ["--name", "No Birthday"]) == "✅ Contact 'No Birthday' added."
         assert run("show-birthday", ["--name", "No Birthday"]) == (
@@ -78,7 +78,7 @@ class TestIntegration:
                 return cls(2026, 1, 1)
 
         monkeypatch.setattr("personal_helper.models.book.date", FixedDate)
-        assert run("birthdays") == "🎂 Alex Rivera: 05.01.2026"
+        assert run("show-birthdays") == "🎂 Alex Rivera: 05.01.2026"
         assert isinstance(run("exit"), ExitRequest)
 
     def test_contact_search_query_fields_and_validation(self, registry, data):

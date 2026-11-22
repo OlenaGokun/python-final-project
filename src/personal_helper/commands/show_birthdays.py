@@ -6,13 +6,13 @@ class ShowBirthdaysCommand(AddressBookCommand):
     """Command to show upcoming birthdays in the next 7 days"""
 
     def get_command_name(self) -> str:
-        return "birthdays"
+        return "show-birthdays"
 
     def get_description(self) -> str:
         return "show upcoming birthdays in the next 7 days"
 
     def get_usage(self) -> str:
-        return "birthdays"
+        return "show-birthdays"
 
     def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
         upcoming = address_book.get_upcoming_birthdays()

@@ -63,7 +63,7 @@ def test_discovers_commands_and_returns_them_by_name():
         "show-all-contacts",
         "show-all-notes",
         "show-birthday",
-        "birthdays",
+        "show-birthdays",
         "change-phone",
         "exit",
         "help",
