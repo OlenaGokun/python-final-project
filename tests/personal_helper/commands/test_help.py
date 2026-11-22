@@ -22,13 +22,13 @@ class TestHelpCommand:
         assert cmd._registry is registry
         assert "📚" in result
         assert "Available Commands" in result
-        assert "add" in result
+        assert "add-contact" in result
         assert "phone" in result
 
     def test_help_specific_command(self, registry, book):
         """Test help for specific command"""
         cmd = registry.get_command("help")
-        result = cmd.run(["--command", "add"], PersonalHelper(book))
+        result = cmd.run(["--command", "add-contact"], PersonalHelper(book))
 
         assert "📖" in result
         assert "Description:" in result
@@ -58,7 +58,7 @@ class TestHelpCommand:
 
     def test_help_rejects_positional_and_duplicate_options(self, registry, book):
         cmd = registry.get_command("help")
-        for args in (["add"], ["--command"], ["--command", "add", "--command", "exit"]):
+        for args in (["add-contact"], ["--command"], ["--command", "add-contact", "--command", "exit"]):
             assert cmd.run(args, PersonalHelper(book)).startswith("❌ Invalid arguments.")
 
 # ============================================================================

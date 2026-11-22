@@ -8,13 +8,13 @@ class ChangeContactCommand(AddressBookCommand):
     """Command to change phone number for a contact"""
 
     def get_command_name(self) -> str:
-        return "change"
+        return "change-phone"
 
     def get_description(self) -> str:
         return "change phone number for a contact"
 
     def get_usage(self) -> str:
-        return "change --name <name> --old-phone <phone> --new-phone <phone>"
+        return "change-phone --name <name> --old-phone <phone> --new-phone <phone>"
 
     @input_error
     def run_with_address_book(self, args: list, address_book: AddressBook) -> str:

@@ -17,4 +17,12 @@ class ShowAllNotesCommand(NotebookCommand):
     def run_with_notebook(self, args: list, notebook: Notebook) -> str:
         if not notebook.data:
             return "ℹ️  No notes found."
-        return "\n".join(f"{note.title}: {note.text}" for note in notebook.data.values())
+        return "\n".join(
+            f"{note.title}: {note.text}"
+            + (
+                f" [tags: {', '.join(sorted(tag.value for tag in note.tags))}]"
+                if note.tags
+                else ""
+            )
+            for note in notebook.data.values()
+        )

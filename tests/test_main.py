@@ -33,8 +33,8 @@ def test_notes_are_searchable_after_cli_save_and_reload(monkeypatch, capsys, tmp
     main()
     capsys.readouterr()
 
-    inputs = iter(["find-notes --tags other FOOD", "find-notes --text MILK AND",
-                   "find-notes --title shop --text milk and --tags home other",
+    inputs = iter(["search-notes --tags other FOOD", "search-notes --text MILK AND",
+                   "search-notes --title shop --text milk and --tags home other",
                    "update-note --title shopping --text Buy coffee", "exit"])
     main()
     output = capsys.readouterr().out
@@ -53,9 +53,9 @@ def test_cli_note_tag_commands(monkeypatch, capsys, tmp_path):
     inputs = iter([
         "add-note --title Shopping --text Buy milk",
         "add-note-tags --title Shopping --tags food home",
-        "find-notes --tags FOOD",
+        "search-notes --tags FOOD",
         "delete-note-tags --title Shopping --tags food",
-        "find-notes --tags food",
+        "search-notes --tags food",
         "exit",
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
@@ -75,16 +75,16 @@ def test_cli_multiword_names_and_titles_without_quotes(monkeypatch, capsys, tmp_
     monkeypatch.setattr("main.load_data", lambda: load_data(path))
     monkeypatch.setattr("main.save_data", lambda data: save_data(data, path))
     inputs = iter([
-        "add --phone 5012345671 --name Mary Jane",
+        "add-contact --phone 5012345671 --name Mary Jane",
         "phone --name mary jane",
         "add-birthday --birthday 01.01.2000 --name Mary Jane",
         "show-birthday --name Mary Jane",
-        "change --new-phone 5099999999 --name Mary Jane --old-phone 5012345671",
+        "change-phone --new-phone 5099999999 --name Mary Jane --old-phone 5012345671",
         "add-note --tags food home --title Grocery list --text Buy milk",
         "add-note-tags --tags shopping --title Grocery list",
         "delete-note-tags --title grocery list --tags food",
         "update-note --text Buy bread --title GROCERY LIST --tags home new",
-        "find-notes --title grocery list --tags new",
+        "search-notes --title grocery list --tags new",
         "exit",
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
@@ -135,7 +135,7 @@ def test_print_commands_uses_registry_for_every_command(capsys):
     assert "exit" in output
     assert "close" not in output
     assert (
-        "add --name <name> [--phone <phone> ...] [--email <email>] "
+        "add-contact --name <name> [--phone <phone> ...] [--email <email>] "
         "[--birthday <DD.MM.YYYY>]"
     ) in output
 

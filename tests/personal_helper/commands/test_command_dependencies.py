@@ -73,22 +73,22 @@ def test_specialized_run_is_marked_final(base):
 
 def test_registry_discovers_specialized_and_general_commands(registry):
     for name in (
-        "add",
-        "change",
+        "add-contact",
+        "change-phone",
         "phone",
         "show-all-contacts",
         "add-birthday",
         "show-birthday",
         "birthdays",
         "add-email",
-        "search",
+        "search-contacts",
     ):
         assert isinstance(registry.get_command(name), AddressBookCommand)
     for name in (
         "add-note",
         "update-note",
         "delete-note",
-        "find-notes",
+        "search-notes",
         "show-all-notes",
         "add-note-tags",
         "delete-note-tags",

@@ -40,7 +40,7 @@ class BaseCommand(ABC):
 
     @abstractmethod
     def get_usage(self) -> str:
-        """Return usage example (e.g., 'add --name <name> [--phone <phone>]')"""
+        """Return usage example (e.g., 'add-contact --name <name> [--phone <phone>]')"""
         pass
 
     def set_registry(self, registry: CommandRegistry) -> None:

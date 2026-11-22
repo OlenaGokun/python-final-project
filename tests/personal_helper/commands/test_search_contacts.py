@@ -22,7 +22,7 @@ def book_with_search_contacts(book):
 
 
 def test_search_command_returns_matching_contact(registry, book_with_search_contacts):
-    result = registry.get_command("search").run(
+    result = registry.get_command("search-contacts").run(
         ["--query", "jane@work.org"], PersonalHelper(book_with_search_contacts)
     )
 
@@ -31,7 +31,7 @@ def test_search_command_returns_matching_contact(registry, book_with_search_cont
 
 
 def test_search_command_joins_multiword_query(registry, book_with_search_contacts):
-    result = registry.get_command("search").run(
+    result = registry.get_command("search-contacts").run(
         ["--query", "Jane", "Smith"], PersonalHelper(book_with_search_contacts)
     )
 
@@ -39,7 +39,7 @@ def test_search_command_joins_multiword_query(registry, book_with_search_contact
 
 
 def test_search_command_reports_no_matches(registry, book_with_search_contacts):
-    result = registry.get_command("search").run(
+    result = registry.get_command("search-contacts").run(
         ["--query", "unknown_xyz"], PersonalHelper(book_with_search_contacts)
     )
 
@@ -47,18 +47,18 @@ def test_search_command_reports_no_matches(registry, book_with_search_contacts):
 
 
 def test_search_command_requires_query_or_field(registry, book_with_search_contacts):
-    result = registry.get_command("search").run(
+    result = registry.get_command("search-contacts").run(
         [], PersonalHelper(book_with_search_contacts)
     )
 
     assert "Provide --query or at least one field" in result
-    assert "Usage: search" in result
+    assert "Usage: search-contacts" in result
 
 
 def test_search_command_rejects_query_with_field_filter(
     registry, book_with_search_contacts
 ):
-    result = registry.get_command("search").run(
+    result = registry.get_command("search-contacts").run(
         ["--query", "john", "--name", "John"],
         PersonalHelper(book_with_search_contacts),
     )
@@ -78,7 +78,7 @@ def test_search_command_rejects_query_with_field_filter(
 def test_search_command_matches_field_filters(
     registry, book_with_search_contacts, field, value, expected_name
 ):
-    result = registry.get_command("search").run(
+    result = registry.get_command("search-contacts").run(
         [field, value], PersonalHelper(book_with_search_contacts)
     )
 
@@ -88,7 +88,7 @@ def test_search_command_matches_field_filters(
 def test_search_command_combines_field_filters_with_and(
     registry, book_with_search_contacts
 ):
-    result = registry.get_command("search").run(
+    result = registry.get_command("search-contacts").run(
         ["--name", "John", "--email", "work.org"],
         PersonalHelper(book_with_search_contacts),
     )

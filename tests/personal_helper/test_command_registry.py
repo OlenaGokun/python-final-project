@@ -57,21 +57,21 @@ def test_discovers_commands_and_returns_them_by_name():
     registry = CommandRegistry()
 
     assert {
-        "add",
+        "add-contact",
         "add-birthday",
         "add-email",
         "show-all-contacts",
         "show-all-notes",
         "show-birthday",
         "birthdays",
-        "change",
+        "change-phone",
         "exit",
         "help",
         "hello",
         "phone",
-        "search",
+        "search-contacts",
     } <= set(registry.commands)
-    assert isinstance(registry.get_command("add"), BaseCommand)
+    assert isinstance(registry.get_command("add-contact"), BaseCommand)
     assert registry.get_command("not-a-command") is None
     assert len(registry.get_all_commands()) == len(registry.commands)
     assert registry.get_command("exit") is not None

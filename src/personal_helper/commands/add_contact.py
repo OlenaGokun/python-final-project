@@ -9,14 +9,14 @@ class AddContact(AddressBookCommand):
     """Command to add contact or update an existing one"""
 
     def get_command_name(self) -> str:
-        return "add"
+        return "add-contact"
 
     def get_description(self) -> str:
         return "add a contact or update an existing one"
 
     def get_usage(self) -> str:
         return (
-            "add --name <name> [--phone <phone> ...] [--email <email>] "
+            "add-contact --name <name> [--phone <phone> ...] [--email <email>] "
             "[--birthday <DD.MM.YYYY>]"
         )
 

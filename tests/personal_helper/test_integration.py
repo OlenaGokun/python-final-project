@@ -19,17 +19,17 @@ class TestIntegration:
 
         assert run("hello") == "How can I help you?"
         assert "Available Commands" in run("help")
-        assert "search" in run("help", ["--command", "search"])
+        assert "search-contacts" in run("help", ["--command", "search-contacts"])
         assert "Unknown command" in run("help", ["--command", "missing"])
         assert run("show-all-contacts") == "ℹ️  No contacts found."
         assert run("birthdays") == "ℹ️  No upcoming birthdays in the next 7 days."
 
-        assert run("add", ["--name", "No Birthday"]) == "✅ Contact 'No Birthday' added."
+        assert run("add-contact", ["--name", "No Birthday"]) == "✅ Contact 'No Birthday' added."
         assert run("show-birthday", ["--name", "No Birthday"]) == (
             "ℹ️  No Birthday has no birthday set."
         )
         assert run(
-            "add",
+            "add-contact",
             [
                 "--name",
                 "Alex Rivera",
@@ -55,7 +55,7 @@ class TestIntegration:
         )
 
         assert run(
-            "change",
+            "change-phone",
             [
                 "--name",
                 "Alex Rivera",
@@ -82,11 +82,11 @@ class TestIntegration:
         assert isinstance(run("exit"), ExitRequest)
 
     def test_contact_search_query_fields_and_validation(self, registry, data):
-        run = lambda args: self.run(registry, data, "search", args)
+        run = lambda args: self.run(registry, data, "search-contacts", args)
         self.run(
             registry,
             data,
-            "add",
+            "add-contact",
             [
                 "--name",
                 "Alice Smith",
@@ -101,7 +101,7 @@ class TestIntegration:
         self.run(
             registry,
             data,
-            "add",
+            "add-contact",
             [
                 "--name",
                 "Bob Smith",
@@ -166,34 +166,36 @@ class TestIntegration:
             ],
         ) == "✅ Note 'Travel plans' added."
 
-        assert run("find-notes", ["--query", "grocery"]) == (
-            "Grocery list: Buy milk and bread"
+        assert run("search-notes", ["--query", "grocery"]) == (
+            "Grocery list: Buy milk and bread [tags: food, home]"
         )
-        assert run("find-notes", ["--query", "food"]) == (
-            "Grocery list: Buy milk and bread"
+        assert run("search-notes", ["--query", "food"]) == (
+            "Grocery list: Buy milk and bread [tags: food, home]"
         )
-        assert run("find-notes", ["--query", "train"]) == "Travel plans: Book train"
-        assert run("find-notes", ["--title", "grocery"]) == (
-            "Grocery list: Buy milk and bread"
+        assert run("search-notes", ["--query", "train"]) == (
+            "Travel plans: Book train [tags: travel]"
         )
-        assert run("find-notes", ["--text", "BREAD"]) == (
-            "Grocery list: Buy milk and bread"
+        assert run("search-notes", ["--title", "grocery"]) == (
+            "Grocery list: Buy milk and bread [tags: food, home]"
         )
-        assert run("find-notes", ["--tags", "HOME"]) == (
-            "Grocery list: Buy milk and bread"
+        assert run("search-notes", ["--text", "BREAD"]) == (
+            "Grocery list: Buy milk and bread [tags: food, home]"
+        )
+        assert run("search-notes", ["--tags", "HOME"]) == (
+            "Grocery list: Buy milk and bread [tags: food, home]"
         )
         assert run(
-            "find-notes",
+            "search-notes",
             ["--title", "grocery", "--text", "milk", "--tags", "home"],
-        ) == "Grocery list: Buy milk and bread"
+        ) == "Grocery list: Buy milk and bread [tags: food, home]"
         assert run(
-            "find-notes",
+            "search-notes",
             ["--title", "grocery", "--text", "milk", "--tags", "travel"],
         ) == "ℹ️  No notes found."
-        assert run("find-notes", ["--query", "missing"]) == "ℹ️  No notes found."
-        assert run("find-notes").startswith("❌ Invalid arguments. Provide --query")
+        assert run("search-notes", ["--query", "missing"]) == "ℹ️  No notes found."
+        assert run("search-notes").startswith("❌ Invalid arguments. Provide --query")
         assert run(
-            "find-notes", ["--query", "milk", "--title", "Grocery"]
+            "search-notes", ["--query", "milk", "--title", "Grocery"]
         ).startswith("❌ Invalid arguments. --query cannot be combined")
 
         assert run(
@@ -213,17 +215,18 @@ class TestIntegration:
                 "drinks",
             ],
         ) == "✅ Note 'Grocery list' updated."
-        assert run("find-notes", ["--query", "coffee"]) == (
-            "Grocery list: Buy coffee"
+        assert run("search-notes", ["--query", "coffee"]) == (
+            "Grocery list: Buy coffee [tags: drinks, home]"
         )
         assert run(
             "delete-note-tags",
             ["--title", "Grocery list", "--tags", "home"],
         ) == "✅ Tags removed from note 'Grocery list'."
         assert run("show-all-notes") == (
-            "Grocery list: Buy coffee\nTravel plans: Book train"
+            "Grocery list: Buy coffee [tags: drinks]\n"
+            "Travel plans: Book train [tags: travel]"
         )
         assert run("delete-note", ["--title", "Grocery list"]) == (
             "✅ Note 'Grocery list' deleted."
         )
-        assert run("show-all-notes") == "Travel plans: Book train"
+        assert run("show-all-notes") == "Travel plans: Book train [tags: travel]"

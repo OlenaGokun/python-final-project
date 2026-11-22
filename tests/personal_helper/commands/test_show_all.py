@@ -38,12 +38,15 @@ def test_show_all_notes_empty(registry, data):
 
 
 def test_show_all_notes_lists_note_titles_and_text(registry, data):
-    data.notebook.add("Shopping", "Buy milk")
+    data.notebook.add("Shopping", "Buy milk", {"food", "home"})
     data.notebook.add("Plans", "Call tomorrow")
 
     result = registry.get_command("show-all-notes").run([], data)
 
-    assert result == "Shopping: Buy milk\nPlans: Call tomorrow"
+    assert result == (
+        "Shopping: Buy milk [tags: food, home]\n"
+        "Plans: Call tomorrow"
+    )
 
 # ============================================================================
 # SHOW BIRTHDAYS COMMAND TESTS

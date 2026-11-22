@@ -9,14 +9,14 @@ class SearchNotesCommand(NotebookCommand):
     """Command to search notes by title, text, and tags."""
 
     def get_command_name(self) -> str:
-        return "find-notes"
+        return "search-notes"
 
     def get_description(self) -> str:
-        return "find notes by title, text, and tags"
+        return "search notes by title, text, or tags"
 
     def get_usage(self) -> str:
         return (
-            "find-notes (--query <query> | [--title <title>] [--text <text>] "
+            "search-notes (--query <query> | [--title <title>] [--text <text>] "
             "[--tags <tag> ...])"
         )
 
@@ -42,4 +42,12 @@ class SearchNotesCommand(NotebookCommand):
         notes = notebook.search(**values)
         if not notes:
             return "ℹ️  No notes found."
-        return "\n".join(f"{note.title}: {note.text}" for note in notes)
+        return "\n".join(
+            f"{note.title}: {note.text}"
+            + (
+                f" [tags: {', '.join(sorted(tag.value for tag in note.tags))}]"
+                if note.tags
+                else ""
+            )
+            for note in notes
+        )

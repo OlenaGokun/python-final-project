@@ -9,14 +9,14 @@ class SearchContactsCommand(AddressBookCommand):
     """Command to find contacts by their details."""
 
     def get_command_name(self) -> str:
-        return "search"
+        return "search-contacts"
 
     def get_description(self) -> str:
         return "search contacts by name, phone, email, or birthday"
 
     def get_usage(self) -> str:
         return (
-            "search (--query <query> | [--name <name>] [--email <email>] "
+            "search-contacts (--query <query> | [--name <name>] [--email <email>] "
             "[--phone <phone>] [--birthday <DD.MM.YYYY>])"
         )
 
