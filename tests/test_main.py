@@ -265,6 +265,7 @@ def test_main_exits_when_save_confirmation_is_interrupted(
     ("operation", "confirmation", "expected_name"),
     [
         ("rename-contact --name Mary Jane --new-name Mary Doe", [], "Mary Doe"),
+        ("rename-contact --name Mary Jane --new-name MARY JANE", [], "MARY JANE"),
         ("delete-contact --name Mary Jane", ["yes"], None),
     ],
 )
@@ -284,7 +285,11 @@ def test_cli_contact_changes_survive_restart(
     inputs = iter([operation, *confirmation, "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     main()
-    capsys.readouterr()
+    operation_output = capsys.readouterr().out
+    if expected_name:
+        assert f"Contact 'Mary Jane' renamed to '{expected_name}'." in operation_output
+    else:
+        assert "Contact 'Mary Jane' deleted." in operation_output
 
     inputs = iter(["show-all-contacts", "show-all-notes", "exit"])
     main()
@@ -292,8 +297,10 @@ def test_cli_contact_changes_survive_restart(
     assert "Mary Jane: Independent note" in output
 
     reloaded = load_data(path)
-    assert reloaded.address_book.find("Mary Jane") is None
     if expected_name:
+        assert len(reloaded.address_book) == 1
+        if expected_name.casefold() != original.name.key:
+            assert reloaded.address_book.find("Mary Jane") is None
         renamed = reloaded.address_book[expected_name]
         assert renamed.name.value == expected_name
         assert (renamed.phones, renamed.email, renamed.birthday) == (
@@ -301,6 +308,7 @@ def test_cli_contact_changes_survive_restart(
         )
         assert f"Contact name: {expected_name}" in output
     else:
+        assert reloaded.address_book.find("Mary Jane") is None
         assert len(reloaded.address_book) == 0
         assert "Contact name: Mary Jane" not in output
 
