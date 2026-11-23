@@ -71,18 +71,48 @@ class Tag(Field):
         super().__init__(value.casefold())
 
 
+PHONE_ALLOWED_CHARS = re.compile(r"^[0-9+\-\s()]+$")
+
+
+def normalize_phone(phone_number, length=10):
+    if not isinstance(phone_number, str):
+        raise InvalidPhoneFormatError(
+            f"Phone must be a string, got {phone_number!r}."
+        )
+
+    cleaned = phone_number.strip()
+    if not cleaned or not PHONE_ALLOWED_CHARS.fullmatch(cleaned):
+        raise InvalidPhoneFormatError(
+            f"Phone must be a valid phone number, got {phone_number!r}."
+        )
+
+    digits = "".join(ch for ch in cleaned if "0" <= ch <= "9")
+
+    if len(digits) == length:
+        normalized = digits
+    elif len(digits) == length + 2 and digits.startswith("38"):
+        normalized = digits[2:]
+    elif len(digits) == length + 1 and digits.startswith("8"):
+        normalized = digits[1:]
+    else:
+        raise InvalidPhoneFormatError(
+            f"Phone must have {length} digits, got {phone_number!r}."
+        )
+
+    return normalized
+
+
 class Phone(Field):
     LENGTH = 10
 
     def __init__(self, value, alias: str | None = None):
-        if not isinstance(value, str) or len(value) != self.LENGTH or not value.isascii() or not value.isdigit():
-            raise InvalidPhoneFormatError(f"Phone must be exactly {self.LENGTH} digits, got {value!r}.")
+        normalized = normalize_phone(value, length=self.LENGTH)
         if alias is not None and (
             not isinstance(alias, str) or not alias
             or any(character.isspace() for character in alias)
         ):
             raise InvalidInputError("Phone alias must be a single non-empty word.")
-        super().__init__(value)
+        super().__init__(normalized)
         self._alias = alias
 
     @property
