@@ -85,6 +85,26 @@ class AddressBook(UserDict):
     def delete(self, name):
         return self.data.pop(self._key(name), None)
 
+    def rename(self, current_name: str, new_name: str):
+        original = self[current_name]
+        replacement = original.copy_with_name(new_name)
+        if replacement.name.value == original.name.value:
+            return original
+
+        old_key = self._key(current_name)
+        new_key = replacement.name.key
+        if new_key != old_key and new_key in self.data:
+            existing = self.data[new_key]
+            raise DuplicateContactError(f"Contact '{existing.name.value}' already exists.")
+
+        del self.data[old_key]
+        try:
+            return self.add_record(replacement)
+        except BaseException:
+            self.data.pop(new_key, None)
+            self.data[old_key] = original
+            raise
+
     def __str__(self):
         if not self.data:
             return "Address book is empty."
