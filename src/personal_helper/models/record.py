@@ -28,6 +28,13 @@ class Record:
     def email(self) -> Email | None:
         return getattr(self, "_email", None)
 
+    def copy_with_name(self, name: str) -> "Record":
+        replacement = Record(name)
+        replacement._phones = list(self.phones)
+        replacement._birthday = self.birthday
+        replacement._email = self.email
+        return replacement
+
     def add_birthday(self, birthday):
         new_birthday = Birthday(birthday)
         self._birthday = new_birthday

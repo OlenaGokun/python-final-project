@@ -177,3 +177,21 @@ class TestRecordStr(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_copy_with_name_preserves_legacy_details_and_owns_its_phone_list():
+    original = Record("Mary Jane")
+    original.add_phone("5012345671")
+    original.add_phone("5099999999")
+    original.add_birthday("01.01.2000")
+    del original._email
+
+    replacement = original.copy_with_name("Mary Doe")
+
+    assert replacement.name.value == "Mary Doe"
+    assert original.name.value == "Mary Jane"
+    assert replacement.phones == original.phones
+    assert replacement.birthday == original.birthday
+    assert replacement.email is None
+    replacement.remove_phone("5012345671")
+    assert len(original.phones) == 2

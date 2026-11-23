@@ -1,9 +1,11 @@
 import unittest
 from collections import UserDict
 
+
+import pytest
 from personal_helper.models.book import AddressBook
 from personal_helper.models.record import Record
-from personal_helper.core import ContactNotFoundError, DuplicateContactError
+from personal_helper.core import ContactNotFoundError, DuplicateContactError, InvalidNameError
 
 class AddressBookTestCase(unittest.TestCase):
     def setUp(self):
@@ -99,3 +101,52 @@ class TestAddressBookStr(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_rename_rekeys_contact_and_preserves_details(book):
+    original = Record("Mary Jane")
+    original.update_details(["5012345671"], "mary@example.test", "01.01.2000")
+    book.add_record(original)
+
+    renamed = book.rename(" MARY JANE ", "Mary Doe")
+
+    assert renamed is book["mary doe"]
+    assert renamed is not original
+    assert book.find("Mary Jane") is None
+    assert (renamed.phones, renamed.email, renamed.birthday) == (
+        original.phones, original.email, original.birthday
+    )
+    assert book.rename("Mary Doe", " Mary Doe ") is renamed
+    assert book.rename("Mary Doe", "MARY DOE").name.value == "MARY DOE"
+    assert len(book) == 1
+
+
+def test_rename_rejects_invalid_or_taken_names_without_mutation(book):
+    original = book.add_record(Record("Mary Jane"))
+    other = book.add_record(Record("Mary Doe"))
+
+    with pytest.raises(DuplicateContactError):
+        book.rename("Mary Jane", " MARY DOE ")
+    with pytest.raises(InvalidNameError):
+        book.rename("Mary Jane", " ")
+    with pytest.raises(ContactNotFoundError):
+        book.rename("Missing", "New name")
+    assert list(book.values()) == [original, other]
+
+
+@pytest.mark.parametrize("name", ["Mary Doe", "MARY JANE"])
+def test_rename_restores_original_when_add_fails(book, monkeypatch, name):
+    original = book.add_record(Record("Mary Jane"))
+    other = book.add_record(Record("Other Contact"))
+    add_record = book.add_record
+
+    def fail_after_insert(record):
+        add_record(record)
+        raise RuntimeError("replacement could not be added")
+
+    monkeypatch.setattr(book, "add_record", fail_after_insert)
+    with pytest.raises(RuntimeError, match="could not be added"):
+        book.rename("Mary Jane", name)
+    assert book["Mary Jane"] is original
+    assert book["Other Contact"] is other
+    assert len(book) == 2

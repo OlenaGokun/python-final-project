@@ -259,3 +259,60 @@ def test_main_exits_when_save_confirmation_is_interrupted(
     output = capsys.readouterr().out
     assert "Good bye!" in output
     assert len(saves) == 1
+
+
+@pytest.mark.parametrize(
+    ("operation", "confirmation", "expected_name"),
+    [
+        ("rename-contact --name Mary Jane --new-name Mary Doe", [], "Mary Doe"),
+        ("rename-contact --name Mary Jane --new-name MARY JANE", [], "MARY JANE"),
+        ("delete-contact --name Mary Jane", ["yes"], None),
+    ],
+)
+def test_cli_contact_changes_survive_restart(
+    monkeypatch, capsys, tmp_path, operation, confirmation, expected_name
+):
+    path = tmp_path / "book.pkl"
+    data = PersonalHelper()
+    original = Record("Mary Jane")
+    original.update_details(["5012345671"], "mary@example.test", "01.01.2000")
+    data.address_book.add_record(original)
+    data.notebook.add("Mary Jane", "Independent note", {"personal"})
+    save_data(data, path)
+    monkeypatch.setattr("main.load_data", lambda: load_data(path))
+    monkeypatch.setattr("main.save_data", lambda updated: save_data(updated, path))
+
+    inputs = iter([operation, *confirmation, "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    main()
+    operation_output = capsys.readouterr().out
+    if expected_name:
+        assert f"Contact 'Mary Jane' renamed to '{expected_name}'." in operation_output
+    else:
+        assert "Contact 'Mary Jane' deleted." in operation_output
+
+    inputs = iter(["show-all-contacts", "show-all-notes", "exit"])
+    main()
+    output = capsys.readouterr().out
+    assert "Mary Jane: Independent note" in output
+
+    reloaded = load_data(path)
+    if expected_name:
+        assert len(reloaded.address_book) == 1
+        if expected_name.casefold() != original.name.key:
+            assert reloaded.address_book.find("Mary Jane") is None
+        renamed = reloaded.address_book[expected_name]
+        assert renamed.name.value == expected_name
+        assert (renamed.phones, renamed.email, renamed.birthday) == (
+            original.phones, original.email, original.birthday
+        )
+        assert f"Contact name: {expected_name}" in output
+    else:
+        assert reloaded.address_book.find("Mary Jane") is None
+        assert len(reloaded.address_book) == 0
+        assert "Contact name: Mary Jane" not in output
+
+    note = reloaded.notebook["Mary Jane"]
+    assert note.title.value == "Mary Jane"
+    assert note.text.value == "Independent note"
+    assert {tag.value for tag in note.tags} == {"personal"}
