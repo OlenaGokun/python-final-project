@@ -1,0 +1,23 @@
+from personal_helper.commands.base_command import AddressBookCommand
+from personal_helper.core.data import parse_options
+from personal_helper.core.decorators import input_error
+from personal_helper.models.book import AddressBook
+
+
+class DeleteBirthdayCommand(AddressBookCommand):
+    def get_command_name(self) -> str:
+        return "delete-birthday"
+
+    def get_description(self) -> str:
+        return "remove a contact's birthday"
+
+    def get_usage(self) -> str:
+        return "delete-birthday --name <name>"
+
+    @input_error
+    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+        required = {"--name"}
+        options = parse_options(args, required, required, self.get_usage())
+        record = address_book[" ".join(options["--name"])]
+        record.remove_birthday()
+        return f"✅ Birthday removed for {record.name.value}."

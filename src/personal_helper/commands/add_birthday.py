@@ -5,13 +5,13 @@ from personal_helper.core.data import parse_options
 
 
 class AddBirthdayCommand(AddressBookCommand):
-    """Command to add birthday for a contact"""
+    """Command to add or update a birthday for a contact"""
 
     def get_command_name(self) -> str:
         return "add-birthday"
 
     def get_description(self) -> str:
-        return "add a birthday for a contact"
+        return "add or update a birthday for a contact"
 
     def get_usage(self) -> str:
         return "add-birthday --name <name> --birthday <DD.MM.YYYY>"

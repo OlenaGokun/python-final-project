@@ -81,12 +81,15 @@ python -m coverage html
 - `hello` — Get a greeting from the bot
 - `add-contact --name <name> [--phone <phone> ...] [--email <email>] [--birthday <DD.MM.YYYY>]` — Add a contact or update its details
 - `change-phone --name <name> --old-phone <phone> --new-phone <phone>` — Change a phone number
+- `delete-phone --name <name> --phone <phone>` — Remove a specific phone number
 - `phone --name <name>` — Show phone numbers for a contact
 - `show-all-contacts` — Show all contacts in the address book
-- `add-birthday --name <name> --birthday <DD.MM.YYYY>` — Add a birthday
+- `add-birthday --name <name> --birthday <DD.MM.YYYY>` — Add or update a birthday
+- `delete-birthday --name <name>` — Remove a contact's birthday
 - `show-birthday --name <name>` — Show birthday for a contact
 - `show-birthdays [--days <days>]` — Show upcoming birthdays for 1 to 365 days ahead, including today. Defaults to 7 days.
 - `add-email --name <name> --email <email>` — Add or update a contact's email
+- `delete-email --name <name>` — Remove a contact's email
 - `search-contacts (--query <query> | [--name <name>] [--email <email>] [--phone <phone>] [--birthday <DD.MM.YYYY>])` — Search contacts by a query or field filters
 - `add-note --title <title> --text <text> [--tags <tag> ...]` — Add a note with optional tags
 - `update-note --title <title> [--text <text>] [--tags <tag> ...]` — Update text or replace tags

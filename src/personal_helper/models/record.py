@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 
 from .fields import Name, Phone, Birthday, Email
-from personal_helper.core import ContactNotFoundError, PhoneNotFoundError, DuplicatePhoneError
+from personal_helper.core import CommandError, DuplicatePhoneError, PhoneNotFoundError
 
 
 class Record:
@@ -40,6 +40,13 @@ class Record:
         self._birthday = new_birthday
         return new_birthday
 
+    def remove_birthday(self) -> Birthday:
+        birthday = self.birthday
+        if birthday is None:
+            raise CommandError(f"Birthday not set for {self.name}.")
+        self._birthday = None
+        return birthday
+
     def add_phone(self, phone):
         new_phone = Phone(phone)
         if self.find_phone(phone) is not None:
@@ -70,6 +77,13 @@ class Record:
         new_email = Email(email)
         self._email = new_email
         return new_email
+
+    def remove_email(self) -> Email:
+        email = self.email
+        if email is None:
+            raise CommandError(f"Email not set for {self.name}.")
+        self._email = None
+        return email
 
     def update_details(
         self,
