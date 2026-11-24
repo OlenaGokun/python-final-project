@@ -1,3 +1,5 @@
+import shlex
+
 from .exceptions import InvalidInputError
 
 
@@ -7,6 +9,11 @@ def parse_input(user_input):
         return "",
     cmd, *args = parts
     cmd = cmd.strip().lower()
+    if cmd in {"add", "change", "delete"}:
+        try:
+            _, *args = shlex.split(user_input)
+        except ValueError as error:
+            raise InvalidInputError(f"Invalid arguments. {error}.") from error
     return cmd, *args
 
 

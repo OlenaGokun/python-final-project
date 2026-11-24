@@ -12,7 +12,7 @@ class DeletePhoneCommand(AddressBookCommand):
         return "remove a contact's phone"
 
     def get_usage(self) -> str:
-        return "delete-phone --name <name> --phone <phone>"
+        return "delete-phone --name <name> --phone <phone-or-alias>"
 
     @input_error
     def run_with_address_book(self, args: list, address_book: AddressBook) -> str:

@@ -80,8 +80,11 @@ python -m coverage html
 - `help --command <command>` — Show details for a specific command
 - `hello` — Get a greeting from the bot
 - `add-contact --name <name> [--phone <phone> ...] [--email <email>] [--birthday <DD.MM.YYYY>]` — Add a contact or update its details
-- `change-phone --name <name> --old-phone <phone> --new-phone <phone>` — Change a phone number
-- `delete-phone --name <name> --phone <phone>` — Remove a specific phone number
+- `add <name> [<alias>] <phone>` — Add a phone, or create the contact and add its first phone
+- `change <name> <phone-or-alias> <new-phone>` — Replace a phone number and keep its alias
+- `delete <name> <phone-or-alias>` — Remove a specific phone number
+- `change-phone --name <name> --old-phone <phone-or-alias> --new-phone <phone>` — Change a phone number
+- `delete-phone --name <name> --phone <phone-or-alias>` — Remove a specific phone number
 - `phone --name <name>` — Show phone numbers for a contact
 - `show-all-contacts` — Show all contacts in the address book
 - `add-birthday --name <name> --birthday <DD.MM.YYYY>` — Add or update a birthday
@@ -100,7 +103,21 @@ python -m coverage html
 - `delete-note-tags --title <title> --tags <tag> [tag ...]` — Remove tags from a note
 - `exit` — Quit the program
 
-Names, titles, text, and search queries can contain spaces without quotes.
+With `add`, `change`, and `delete`, put names containing spaces in quotes.
+`add` defaults to the `main` alias. An alias can be any single word and must
+be unique within the contact, ignoring case. Use `phone --name <name>` to see
+each saved alias next to its number.
+
+```text
+add Jane 5550009999
+add Jane mobile 6660006666
+change Jane mobile 8889990001
+delete Jane 8889990001
+add "Mary Jane" home 0501234567
+```
+
+In commands that use options, names, titles, text, and search queries can
+contain spaces without quotes.
 Options may appear in any order; each consumes words until the next option.
 Words starting with `--` are reserved for option names and cannot be used as
 values. Options cannot be repeated, and each requires a value. Command input
