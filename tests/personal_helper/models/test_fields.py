@@ -87,6 +87,8 @@ class TestPhone(unittest.TestCase):
         self.assertEqual(Phone("38050-111-22-22").value, "0501112222")
         self.assertEqual(Phone("38050 111 22 11   ").value, "0501112211")
         self.assertEqual(Phone("123-456-7890").value, "1234567890")
+        self.assertEqual(Phone("80501234567").value, "0501234567")
+        self.assertEqual(str(Phone("+38(050)123-45-67")), "0501234567")
 
     def test_non_ascii_digits_are_rejected(self):
         with self.assertRaises(InvalidPhoneFormatError):

@@ -1,9 +1,10 @@
 from collections.abc import Iterable
 
-from .fields import Address, Name, Phone, Birthday, Email
+from .fields import Address, Name, Phone, Birthday, Email, normalize_phone
 from personal_helper.core import (
     CommandError,
     DuplicatePhoneError,
+    InvalidPhoneFormatError,
     PhoneNotFoundError,
 )
 
@@ -58,7 +59,8 @@ class Record:
         return birthday
 
     def add_phone(self, phone, alias: str | None = None):
-        new_phone = Phone(phone, alias)
+        normalized = normalize_phone(phone)
+        new_phone = Phone(normalized, alias)
         self._validate_phone(new_phone, self._phones)
         self._phones.append(new_phone)
         return new_phone
@@ -74,7 +76,8 @@ class Record:
         found = self.find_phone(old_phone)
         if found is None:
             raise PhoneNotFoundError(f"Phone {old_phone} not found for {self.name}.")
-        replacement = Phone(new_phone, found.alias)
+        normalized_new = normalize_phone(new_phone)
+        replacement = Phone(normalized_new, found.alias)
         other_phones = (phone for phone in self._phones if phone is not found)
         self._validate_phone(replacement, other_phones)
         # replace in place so the phone order is preserved
@@ -82,14 +85,19 @@ class Record:
         return replacement
 
     def find_phone(self, phone):
-        key = phone.casefold() if isinstance(phone, str) else phone
-        return next(
-            (
-                p for p in self._phones
-                if p.value == phone or (key is not None and p.alias_key == key)
-            ),
-            None,
-        )
+        if not isinstance(phone, str):
+            return None
+        key = phone.casefold()
+        by_alias = next((p for p in self._phones if p.alias_key == key), None)
+        if by_alias is not None:
+            return by_alias
+
+        try:
+            normalized = normalize_phone(phone)
+        except InvalidPhoneFormatError:
+            return None
+
+        return next((p for p in self._phones if p.value == normalized), None)
 
     def _validate_phone(self, candidate: Phone, existing: Iterable[Phone]) -> None:
         alias_key = candidate.alias_key

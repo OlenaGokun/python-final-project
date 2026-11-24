@@ -72,7 +72,23 @@ class Tag(Field):
 
 
 PHONE_ALLOWED_CHARS = re.compile(r"^[0-9+\-\s()]+$")
+PLUS_PREFIX_PATTERN = re.compile(r"^\+38")
 
+
+def has_valid_plus_and_parens(cleaned: str) -> bool:
+    if "+" in cleaned:
+        if not PLUS_PREFIX_PATTERN.match(cleaned) or cleaned.count("+") > 1:
+            return False
+
+    depth = 0
+    for ch in cleaned:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth < 0:
+                return False
+    return depth == 0
 
 def normalize_phone(phone_number, length=10):
     if not isinstance(phone_number, str):
@@ -86,6 +102,11 @@ def normalize_phone(phone_number, length=10):
             f"Phone must be a valid phone number, got {phone_number!r}."
         )
 
+    if not has_valid_plus_and_parens(cleaned):
+        raise InvalidPhoneFormatError(
+            f"Invalid '+' placement or parentheses in phone number: {phone_number!r}."
+        )
+    
     digits = "".join(ch for ch in cleaned if "0" <= ch <= "9")
 
     if len(digits) == length:
@@ -106,13 +127,13 @@ class Phone(Field):
     LENGTH = 10
 
     def __init__(self, value, alias: str | None = None):
-        normalized = normalize_phone(value, length=self.LENGTH)
+        normalized_value = normalize_phone(value, length=self.LENGTH)
         if alias is not None and (
             not isinstance(alias, str) or not alias
             or any(character.isspace() for character in alias)
         ):
             raise InvalidInputError("Phone alias must be a single non-empty word.")
-        super().__init__(normalized)
+        super().__init__(normalized_value)
         self._alias = alias
 
     @property
@@ -144,6 +165,7 @@ class Birthday(Field):
     def __str__(self):
         # Same format the user types it in.
         return self.value.strftime("%d.%m.%Y")
+    
 class Email(Field):
     EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 

@@ -63,6 +63,12 @@ class TestAddPhone(unittest.TestCase):
             self.record.add_phone("1234567890")
         self.assertEqual(len(self.record.phones), 1)
 
+    def test_normalizes_phone_and_rejects_duplicate_in_another_format(self):
+        self.record.add_phone("+38(050)123-45-67")
+        self.assertEqual(self.record.phones[0].value, "0501234567")
+        with self.assertRaises(DuplicatePhoneError):
+            self.record.add_phone("0501234567")
+
 class TestFindPhone(unittest.TestCase):
     def setUp(self):
         self.record = Record("John")
