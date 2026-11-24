@@ -5,6 +5,7 @@ from personal_helper.core import (
     InvalidNameError,
     InvalidNoteError,
     InvalidPhoneFormatError,
+    InvalidInputError,
 )
 
 
@@ -73,10 +74,29 @@ class Tag(Field):
 class Phone(Field):
     LENGTH = 10
 
-    def __init__(self, value):
+    def __init__(self, value, alias: str | None = None):
         if not isinstance(value, str) or len(value) != self.LENGTH or not value.isascii() or not value.isdigit():
             raise InvalidPhoneFormatError(f"Phone must be exactly {self.LENGTH} digits, got {value!r}.")
+        if alias is not None and (
+            not isinstance(alias, str) or not alias
+            or any(character.isspace() for character in alias)
+        ):
+            raise InvalidInputError("Phone alias must be a single non-empty word.")
         super().__init__(value)
+        self._alias = alias
+
+    @property
+    def alias(self) -> str | None:
+        # Phone objects saved before aliases have no _alias attribute.
+        return getattr(self, "_alias", None)
+
+    @property
+    def alias_key(self) -> str | None:
+        alias = self.alias
+        return alias.casefold() if alias is not None else None
+
+    def __str__(self) -> str:
+        return f"{self.alias}: {self.value}" if self.alias is not None else self.value
 
 
 class Birthday(Field):

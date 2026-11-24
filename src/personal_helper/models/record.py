@@ -47,10 +47,9 @@ class Record:
         self._birthday = None
         return birthday
 
-    def add_phone(self, phone):
-        new_phone = Phone(phone)
-        if self.find_phone(phone) is not None:
-            raise DuplicatePhoneError(f"Phone {phone} already exists for {self.name}.")
+    def add_phone(self, phone, alias: str | None = None):
+        new_phone = Phone(phone, alias)
+        self._validate_phone(new_phone, self._phones)
         self._phones.append(new_phone)
         return new_phone
 
@@ -62,16 +61,38 @@ class Record:
         return found
 
     def edit_phone(self, old_phone, new_phone):
-        replacement = Phone(new_phone)
         found = self.find_phone(old_phone)
         if found is None:
             raise PhoneNotFoundError(f"Phone {old_phone} not found for {self.name}.")
+        replacement = Phone(new_phone, found.alias)
+        other_phones = (phone for phone in self._phones if phone is not found)
+        self._validate_phone(replacement, other_phones)
         # replace in place so the phone order is preserved
         self._phones[self._phones.index(found)] = replacement
         return replacement
 
     def find_phone(self, phone):
-        return next((p for p in self._phones if p.value == phone), None)
+        key = phone.casefold() if isinstance(phone, str) else phone
+        return next(
+            (
+                p for p in self._phones
+                if p.value == phone or (key is not None and p.alias_key == key)
+            ),
+            None,
+        )
+
+    def _validate_phone(self, candidate: Phone, existing: Iterable[Phone]) -> None:
+        alias_key = candidate.alias_key
+        for phone in existing:
+            selectors = (phone.value, phone.alias_key)
+            if alias_key is not None and alias_key in selectors:
+                raise DuplicatePhoneError(
+                    f"Phone alias '{candidate.alias}' already exists for {self.name}."
+                )
+            if candidate.value in selectors:
+                raise DuplicatePhoneError(
+                    f"Phone {candidate.value} already exists for {self.name}."
+                )
 
     def add_email(self, email):
         new_email = Email(email)
@@ -91,19 +112,16 @@ class Record:
         email: str | None = None,
         birthday: str | None = None,
     ) -> None:
-        new_phones = [Phone(phone) for phone in phones]
-        seen_phones = set()
-        for phone in new_phones:
-            if phone.value in seen_phones or self.find_phone(phone.value):
-                raise DuplicatePhoneError(
-                    f"Phone {phone.value} already exists for {self.name}."
-                )
-            seen_phones.add(phone.value)
+        updated_phones = list(self._phones)
+        for value in phones:
+            phone = Phone(value)
+            self._validate_phone(phone, updated_phones)
+            updated_phones.append(phone)
 
         new_email = Email(email) if email is not None else None
         new_birthday = Birthday(birthday) if birthday is not None else None
 
-        self._phones.extend(new_phones)
+        self._phones = updated_phones
         if new_email is not None:
             self._email = new_email
         if new_birthday is not None:
@@ -112,7 +130,7 @@ class Record:
     def __str__(self):
         birthday_str = f", birthday: {self.birthday}" if self.birthday else ""
         email_str = f", email: {self.email}" if self.email else ""
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}{email_str}{birthday_str}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(map(str, self.phones))}{email_str}{birthday_str}"
 
     def __repr__(self):
         birthday_repr = f", birthday={self.birthday.value!r}" if self.birthday else ""

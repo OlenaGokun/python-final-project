@@ -22,4 +22,4 @@ class ShowPhoneCommand(AddressBookCommand):
         record = address_book[" ".join(options["--name"])]
         if not record.phones:
             return f"ℹ️  No phone numbers found for {record.name.value}."
-        return "; ".join(p.value for p in record.phones)
+        return "; ".join(map(str, record.phones))
