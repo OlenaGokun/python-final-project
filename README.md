@@ -81,7 +81,6 @@ python -m coverage html
 - `hello` — Get a greeting from the bot
 - `add-contact --name <name> [--phone <phone> ...] [--email <email>] [--birthday <DD.MM.YYYY>]` — Add a contact or update its details
 - `add <name> [<alias>] <phone>` — Add a phone, or create the contact and add its first phone
-- `change <name> <phone-or-alias> <new-phone>` — Replace a phone number and keep its alias
 - `delete <name> <phone-or-alias>` — Remove a specific phone number
 - `change-phone --name <name> --old-phone <phone-or-alias> --new-phone <phone>` — Change a phone number
 - `delete-phone --name <name> --phone <phone-or-alias>` — Remove a specific phone number
@@ -103,7 +102,7 @@ python -m coverage html
 - `delete-note-tags --title <title> --tags <tag> [tag ...]` — Remove tags from a note
 - `exit` — Quit the program
 
-With `add`, `change`, and `delete`, put names containing spaces in quotes.
+With `add` and `delete`, put names containing spaces in quotes.
 `add` defaults to the `main` alias. An alias can be any single word and must
 be unique within the contact, ignoring case. Use `phone --name <name>` to see
 each saved alias next to its number.
@@ -111,7 +110,7 @@ each saved alias next to its number.
 ```text
 add Jane 5550009999
 add Jane mobile 6660006666
-change Jane mobile 8889990001
+change-phone --name Jane --old-phone mobile --new-phone 8889990001
 delete Jane 8889990001
 add "Mary Jane" home 0501234567
 ```

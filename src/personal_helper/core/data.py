@@ -9,7 +9,7 @@ def parse_input(user_input):
         return "",
     cmd, *args = parts
     cmd = cmd.strip().lower()
-    if cmd in {"add", "change", "delete"}:
+    if cmd in {"add", "delete"}:
         try:
             _, *args = shlex.split(user_input)
         except ValueError as error:
