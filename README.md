@@ -85,7 +85,7 @@ python -m coverage html
 - `show-all-contacts` — Show all contacts in the address book
 - `add-birthday --name <name> --birthday <DD.MM.YYYY>` — Add a birthday
 - `show-birthday --name <name>` — Show birthday for a contact
-- `show-birthdays` — Show upcoming birthdays in the next 7 days
+- `show-birthdays [--days <days>]` — Show upcoming birthdays for 1 to 365 days ahead, including today. Defaults to 7 days.
 - `add-email --name <name> --email <email>` — Add or update a contact's email
 - `search-contacts (--query <query> | [--name <name>] [--email <email>] [--phone <phone>] [--birthday <DD.MM.YYYY>])` — Search contacts by a query or field filters
 - `add-note --title <title> --text <text> [--tags <tag> ...]` — Add a note with optional tags
