@@ -80,8 +80,7 @@ python -m coverage html
 - `help --command <command>` — Show details for a specific command
 - `hello` — Get a greeting from the bot
 - `add-contact --name <name> [--phone <phone> ...] [--email <email>] [--birthday <DD.MM.YYYY>]` — Add a contact or update its details
-- `add <name> [<alias>] <phone>` — Add a phone, or create the contact and add its first phone
-- `delete <name> <phone-or-alias>` — Remove a specific phone number
+- `add-phone --name <name> --phone <phone> [--alias <alias>]` — Add a phone, or create the contact and add its first phone
 - `change-phone --name <name> --old-phone <phone-or-alias> --new-phone <phone>` — Change a phone number
 - `delete-phone --name <name> --phone <phone-or-alias>` — Remove a specific phone number
 - `phone --name <name>` — Show phone numbers for a contact
@@ -102,17 +101,16 @@ python -m coverage html
 - `delete-note-tags --title <title> --tags <tag> [tag ...]` — Remove tags from a note
 - `exit` — Quit the program
 
-With `add` and `delete`, put names containing spaces in quotes.
-`add` defaults to the `main` alias. An alias can be any single word and must
+`add-phone` defaults to the `main` alias. An alias can be any single word and must
 be unique within the contact, ignoring case. Use `phone --name <name>` to see
 each saved alias next to its number.
 
 ```text
-add Jane 5550009999
-add Jane mobile 6660006666
+add-phone --name Jane --phone 5550009999
+add-phone --name Jane --phone 6660006666 --alias mobile
 change-phone --name Jane --old-phone mobile --new-phone 8889990001
-delete Jane 8889990001
-add "Mary Jane" home 0501234567
+delete-phone --name Jane --phone 8889990001
+add-phone --name Mary Jane --phone 0501234567 --alias home
 ```
 
 In commands that use options, names, titles, text, and search queries can

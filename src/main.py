@@ -3,7 +3,6 @@ import pickle
 from personal_helper import parse_input, CommandRegistry
 from personal_helper.models import PersonalHelper
 from personal_helper.commands.base_command import ExitRequest
-from personal_helper.core import InvalidInputError
 from personal_helper.core.pickle_manager import load_data, save_data
 
 
@@ -76,11 +75,7 @@ def main():
             print()
             user_input = "exit"
 
-        try:
-            command, *args = parse_input(user_input)
-        except InvalidInputError as error:
-            print(f"❌ {error}")
-            continue
+        command, *args = parse_input(user_input)
 
         if not command:
             print("Please enter a command.")
