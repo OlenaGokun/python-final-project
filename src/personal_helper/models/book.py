@@ -3,6 +3,8 @@ from datetime import datetime, date, timedelta
 import calendar
 from personal_helper.core import ContactNotFoundError, DuplicateContactError
 
+DEFAULT_BIRTHDAY_WINDOW_DAYS = 7
+
 class AddressBook(UserDict):
 
     @staticmethod
@@ -23,8 +25,8 @@ class AddressBook(UserDict):
         return occurrence
 
 
-    def get_upcoming_birthdays(self):
-        """Return list of dicts with contact info for birthdays in the next 7 days."""
+    def get_upcoming_birthdays(self, days: int = DEFAULT_BIRTHDAY_WINDOW_DAYS):
+        """Return upcoming birthdays from today through the given number of days."""
         users_to_congratulate = []
         today = date.today()
         
@@ -36,7 +38,7 @@ class AddressBook(UserDict):
             next_birthday = self._next_birthday(birthday, today)
             
             number_of_days_until_birthday = (next_birthday - today).days
-            if number_of_days_until_birthday <= 7:
+            if number_of_days_until_birthday <= days:
                 congratulation_date = next_birthday
                 if congratulation_date.weekday() >= 5:
                     congratulation_date += timedelta(days=7 - congratulation_date.weekday())
