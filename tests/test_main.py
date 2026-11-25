@@ -620,3 +620,38 @@ def test_exact_commands_and_prompt_controls_skip_suggestions(
     assert turns[4].splitlines() == ["Please enter a command."]
     assert capsys.readouterr().out.strip() == "Good bye!"
     assert len(saves) == 1
+
+
+def test_lookup_miss_sends_only_normalized_name_and_live_names(
+    monkeypatch, capsys, registry, data
+):
+    from unittest.mock import Mock
+
+    matcher = Mock(side_effect=[["show-all-contacts"], []])
+    monkeypatch.setattr("main.suggest_commands", matcher, raising=False)
+    monkeypatch.setattr("main.CommandRegistry", lambda: registry)
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda data: None)
+    names = [cmd.get_command_name() for cmd in registry.get_all_commands()]
+    enumerate_commands = Mock(wraps=registry.get_all_commands)
+    monkeypatch.setattr(registry, "get_all_commands", enumerate_commands)
+    submissions = iter(["SHOW-ALL-C --name Private Person", "s", "sh", "zzzzzzzz", "exit"])
+    turns = []
+
+    def read(prompt):
+        assert prompt == "Enter a command: "
+        turns.append(capsys.readouterr().out.splitlines())
+        return next(submissions)
+
+    monkeypatch.setattr("builtins.input", read)
+
+    main()
+
+    assert turns[1] == ["Invalid command.", "Did you mean: show-all-contacts?"]
+    assert turns[2:] == [["Invalid command."]] * 3
+    assert [(token, list(candidates)) for token, candidates in
+            (call.args for call in matcher.call_args_list)] == [
+        ("show-all-c", names),
+        ("zzzzzzzz", names),
+    ]
+    assert enumerate_commands.call_count == 4  # Setup, help, and two eligible misses.
