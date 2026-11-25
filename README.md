@@ -107,6 +107,12 @@ python -m coverage html
 be unique within the contact, ignoring case. Use `phone --name <name>` to see
 each saved alias next to its number.
 
+When `add-contact`, `add-phone`, `change-phone`, or `add-email` receives an
+invalid phone number or email address, the interactive CLI asks for a replacement
+without requiring the full command again. Enter `cancel` or press Ctrl+D/Ctrl+C
+to cancel the command; no contact changes are applied. Other validation errors,
+such as duplicate phone numbers, are reported as usual.
+
 `search-contacts` displays each matching contact in an indented, detailed view.
 `show-all-contacts` displays each contact on one compact line with icons.
 Missing fields are shown as `—`. Names, field labels, and phone aliases are

@@ -5,6 +5,7 @@ from colorama import just_fix_windows_console
 from personal_helper import parse_input, CommandRegistry
 from personal_helper.models import PersonalHelper
 from personal_helper.commands.base_command import ExitRequest
+from personal_helper.commands.contact_field_retry import ContactFieldRetry
 from personal_helper.core.pickle_manager import load_data, save_data
 from personal_helper.core.formatting import error_message
 
@@ -49,9 +50,22 @@ def confirm_exit(data: PersonalHelper) -> bool:
         print(error_message("Please enter yes or no."))
 
 
+def retry_contact_field(field: str, error: Exception) -> str | None:
+    print(error_message(f"❌ {error}"))
+    try:
+        value = input(f"Enter a valid {field} (or cancel): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return None
+    return None if value.casefold() == "cancel" else value
+
+
 def main():
     just_fix_windows_console()
     registry = CommandRegistry()
+    for command in registry.get_all_commands():
+        if isinstance(command, ContactFieldRetry):
+            command.set_field_retry_handler(retry_contact_field)
     try:
         data = load_data()
     except (

@@ -3,9 +3,10 @@ from personal_helper.core.data import parse_options
 from personal_helper.models.book import AddressBook
 from personal_helper.models.record import Record
 from personal_helper.commands.base_command import AddressBookCommand
+from personal_helper.commands.contact_field_retry import ContactFieldRetry
 
 
-class AddContact(AddressBookCommand):
+class AddContact(ContactFieldRetry, AddressBookCommand):
     """Command to add contact or update an existing one"""
 
     def get_command_name(self) -> str:
@@ -40,6 +41,9 @@ class AddContact(AddressBookCommand):
         is_new_contact = record is None
         if record is None:
             record = Record(name)
+        phones = [self._validate_contact_field(phone, "phone") for phone in phones]
+        if email is not None:
+            email = self._validate_contact_field(email, "email")
         record.update_details(
             phones=phones, email=email, birthday=birthday, address=address
         )

@@ -1,11 +1,12 @@
 import personal_helper
 from personal_helper.commands.base_command import AddressBookCommand
+from personal_helper.commands.contact_field_retry import ContactFieldRetry
 from personal_helper.core.data import parse_options
 from personal_helper.core.decorators import input_error
 from personal_helper.models.book import AddressBook
 
 
-class AddEmailCommand(AddressBookCommand):
+class AddEmailCommand(ContactFieldRetry, AddressBookCommand):
     """Command to add or update a contact's email address."""
 
     def get_command_name(self) -> str:
@@ -26,5 +27,6 @@ class AddEmailCommand(AddressBookCommand):
         name = " ".join(options["--name"])
         record = address_book[name]
 
-        record.add_email(options["--email"][0])
+        email = self._validate_contact_field(options["--email"][0], "email")
+        record.add_email(email)
         return f"✅ Email added for {record.name.value}."

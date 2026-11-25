@@ -1,10 +1,11 @@
 from personal_helper.core.decorators import input_error
 from personal_helper.models.book import AddressBook
 from personal_helper.commands.base_command import AddressBookCommand
+from personal_helper.commands.contact_field_retry import ContactFieldRetry
 from personal_helper.core.data import parse_options
 
 
-class ChangePhoneCommand(AddressBookCommand):
+class ChangePhoneCommand(ContactFieldRetry, AddressBookCommand):
     """Command to change phone number for a contact"""
 
     def get_command_name(self) -> str:
@@ -25,5 +26,7 @@ class ChangePhoneCommand(AddressBookCommand):
         old_phone = options["--old-phone"][0]
         new_phone = options["--new-phone"][0]
         record = address_book[name]
+        if record.find_phone(old_phone) is not None:
+            new_phone = self._validate_contact_field(new_phone, "phone")
         record.edit_phone(old_phone, new_phone)
         return f"✅ Contact '{record.name.value}' updated."
