@@ -579,3 +579,44 @@ def test_cli_contact_changes_survive_restart(
     assert note.title.value == "Mary Jane"
     assert note.text.value == "Independent note"
     assert {tag.value for tag in note.tags} == {"personal"}
+
+
+@pytest.mark.parametrize("interrupt", [EOFError, KeyboardInterrupt])
+def test_exact_commands_and_prompt_controls_skip_suggestions(
+    monkeypatch, capsys, interrupt
+):
+    from types import SimpleNamespace
+
+    inputs = iter(["show-all-notes", "show-contact", "go", " ", interrupt])
+    turns = []
+    saves = []
+    short_command = SimpleNamespace(run=lambda args, data: "Short command ran.")
+    original_lookup = CommandRegistry.get_command
+
+    def lookup(registry, name):
+        return short_command if name == "go" else original_lookup(registry, name)
+
+    def read(prompt):
+        assert prompt == "Enter a command: "
+        turns.append(capsys.readouterr().out)
+        submission = next(inputs)
+        if submission is interrupt:
+            raise interrupt
+        return submission
+
+    monkeypatch.setattr(CommandRegistry, "get_command", lookup)
+    monkeypatch.setattr("builtins.input", read)
+    monkeypatch.setattr("main.load_data", PersonalHelper)
+    monkeypatch.setattr("main.save_data", saves.append)
+
+    main()
+
+    assert turns[1].splitlines() == ["ℹ️  No notes found."]
+    assert turns[2].splitlines() == [
+        "❌ Invalid arguments. Missing required options: --name.",
+        "Usage: show-contact --name <name>",
+    ]
+    assert turns[3].splitlines() == ["Short command ran."]
+    assert turns[4].splitlines() == ["Please enter a command."]
+    assert capsys.readouterr().out.strip() == "Good bye!"
+    assert len(saves) == 1
