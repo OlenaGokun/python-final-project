@@ -32,7 +32,7 @@ def test_cli_displays_compact_and_detailed_contacts(monkeypatch, capsys):
     contact = data.address_book.add_record(Record("Jane Doe"))
     contact.add_phone("0505055500", "main")
     contact.add_email("jane@example.com")
-    contact.add_address("Privit st. 5")
+    contact.add_address("Main st. 5")
     contact.add_birthday("21.11.2006")
     inputs = iter(["show-all-contacts", "search-contacts --name Jane", "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
@@ -44,14 +44,14 @@ def test_cli_displays_compact_and_detailed_contacts(monkeypatch, capsys):
     output = capsys.readouterr().out
     assert (
         "Jane Doe: 📞 main 0505055500; ✉️ jane@example.com; "
-        "🏠 Privit st. 5; 🎂 21.11.2006\n"
+        "🏠 Main st. 5; 🎂 21.11.2006\n"
     ) in output
     assert (
         "Jane Doe\n"
         "    phones:\n"
         "              main 0505055500\n"
         "    email:    jane@example.com\n"
-        "    address:  Privit st. 5\n"
+        "    address:  Main st. 5\n"
         "    birthday: 21.11.2006\n"
     ) in output
     assert "\x1b[" not in output
@@ -359,7 +359,7 @@ def test_cli_contact_changes_survive_restart(
     data = PersonalHelper()
     original = Record("Mary Jane")
     original.update_details(["5012345671"], "mary@example.test", "01.01.2000")
-    original.add_address("Privit st. 5")
+    original.add_address("Main st. 5")
     data.address_book.add_record(original)
     data.notebook.add("Mary Jane", "Independent note", {"personal"})
     save_data(data, path)

@@ -7,11 +7,11 @@ def test_add_address_updates_existing_contact(registry, data):
     data.address_book.add_record(Record("Jane"))
 
     result = registry.get_command("add-address").run(
-        ["--name", "Jane", "--address", "Privit", "st.", "5"], data
+        ["--name", "Jane", "--address", "Main", "st.", "5"], data
     )
 
     assert result == "✅ Address added for Jane."
-    assert data.address_book["Jane"].address.value == "Privit st. 5"
+    assert data.address_book["Jane"].address.value == "Main st. 5"
 
 
 def test_add_address_replaces_existing_address(registry, data):
@@ -28,7 +28,7 @@ def test_add_address_replaces_existing_address(registry, data):
 
 def test_add_address_requires_contact(registry, data):
     result = registry.get_command("add-address").run(
-        ["--name", "Nobody", "--address", "Privit", "st."], data
+        ["--name", "Nobody", "--address", "Main", "st."], data
     )
 
     assert result == "❌ Contact 'Nobody' not found."
@@ -54,7 +54,7 @@ def test_add_address_rejects_empty_address(registry, data):
 
 def test_delete_address_removes_existing_address(registry, data):
     record = data.address_book.add_record(Record("Jane"))
-    record.add_address("Privit st. 5")
+    record.add_address("Main st. 5")
 
     result = registry.get_command("delete-address").run(["--name", "Jane"], data)
 

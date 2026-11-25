@@ -206,7 +206,7 @@ def test_copy_with_name_preserves_legacy_details_and_owns_its_phone_list():
     original.add_phone("5012345671")
     original.add_phone("5099999999")
     original.add_birthday("01.01.2000")
-    original.add_address("Privit st. 5")
+    original.add_address("Main st. 5")
     del original._email
 
     replacement = original.copy_with_name("Mary Doe")

@@ -48,7 +48,7 @@ class TestIntegration:
         ) == "✅ Email added for Alex Rivera."
         assert run(
             "add-address",
-            ["--name", "Alex Rivera", "--address", "Privit", "st.", "5"],
+            ["--name", "Alex Rivera", "--address", "Main", "st.", "5"],
         ) == "✅ Address added for Alex Rivera."
         assert run(
             "add-birthday",
@@ -75,7 +75,7 @@ class TestIntegration:
         assert "Alex Rivera" in contacts
         assert "No Birthday" in contacts
         assert "alex@example.com" in contacts
-        assert "Privit st. 5" in contacts
+        assert "Main st. 5" in contacts
 
         class FixedDate(date):
             @classmethod

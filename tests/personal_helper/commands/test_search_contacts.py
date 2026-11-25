@@ -20,7 +20,7 @@ def book_with_search_contacts(book):
     jane = Record("Jane Smith")
     jane.add_phone("0987654321")
     jane.add_email("jane@work.org")
-    jane.add_address("Privit st. 5")
+    jane.add_address("Main st. 5")
     book.add_record(jane)
 
     return book
@@ -34,7 +34,7 @@ def test_search_command_returns_matching_contact(registry, book_with_search_cont
     assert "Jane Smith" in result
     assert "jane@work.org" in result
     assert "address:" in result
-    assert "Privit st. 5" in result
+    assert "Main st. 5" in result
     assert "birthday:" in result
 
 
@@ -81,7 +81,7 @@ def test_search_command_rejects_query_with_field_filter(
         ("--email", "DOE@", "John"),
         ("--phone", "7654", "Jane Smith"),
         ("--birthday", "15.03", "John"),
-        ("--address", "privit ST.", "Jane Smith"),
+        ("--address", "main ST.", "Jane Smith"),
     ],
 )
 def test_search_command_matches_field_filters(
@@ -106,7 +106,7 @@ def test_search_command_renders_contact_fields_in_vertical_layout(
         "    phones:\n"
         "              0987654321\n"
         "    email:    jane@work.org\n"
-        "    address:  Privit st. 5\n"
+        "    address:  Main st. 5\n"
         "    birthday: —"
     )
 
@@ -133,7 +133,7 @@ def test_search_displays_multiple_phone_aliases_and_contacts(registry, data):
     jane.add_phone("0505055500", "main")
     jane.add_phone("0976787886", "work")
     jane.add_email("jane@example.com")
-    jane.add_address("Privit st. 5")
+    jane.add_address("Main st. 5")
     jane.add_birthday("21.11.2006")
     data.address_book.add_record(Record("James Doe"))
 
@@ -145,7 +145,7 @@ def test_search_displays_multiple_phone_aliases_and_contacts(registry, data):
         "              main 0505055500\n"
         "              work 0976787886\n"
         "    email:    jane@example.com\n"
-        "    address:  Privit st. 5\n"
+        "    address:  Main st. 5\n"
         "    birthday: 21.11.2006\n\n"
         "James Doe\n"
         "    phones:\n"

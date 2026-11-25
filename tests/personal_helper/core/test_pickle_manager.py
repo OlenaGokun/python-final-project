@@ -52,7 +52,7 @@ class TestSaveLoad(unittest.TestCase):
         record = Record("John")
         record.add_phone("1234567890")
         record.add_birthday("15.03.1990")
-        record.add_address("Privit st. 5")
+        record.add_address("Main st. 5")
         book.add_record(record)
         return book
 
@@ -62,7 +62,7 @@ class TestSaveLoad(unittest.TestCase):
         loaded = load_data(path)
         self.assertEqual(str(loaded.address_book["JOHN"]), str(self._book()["john"]))
         self.assertEqual(
-            loaded.address_book["JOHN"].address.value, "Privit st. 5"
+            loaded.address_book["JOHN"].address.value, "Main st. 5"
         )
 
     def test_note_round_trip(self):

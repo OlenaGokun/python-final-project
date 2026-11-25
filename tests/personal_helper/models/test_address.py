@@ -5,13 +5,13 @@ from personal_helper.core import CommandError, InvalidInputError
 
 
 def test_address_strips_surrounding_whitespace():
-    assert Address("  Privit st. 5  ").value == "Privit st. 5"
+    assert Address("  Main st. 5  ").value == "Main st. 5"
 
 
 def test_address_equality_and_hashability():
-    assert Address("Privit st. 5") == Address("Privit st. 5")
-    assert Address("Privit st. 5") != Field("Privit st. 5")
-    assert len({Address("Privit st. 5"), Address("Privit st. 5")}) == 1
+    assert Address("Main st. 5") == Address("Main st. 5")
+    assert Address("Main st. 5") != Field("Main st. 5")
+    assert len({Address("Main st. 5"), Address("Main st. 5")}) == 1
 
 
 @pytest.mark.parametrize("value", ["", "   ", None, 123])
@@ -23,11 +23,11 @@ def test_address_rejects_empty_or_non_string_values(value):
 def test_record_add_and_remove_address():
     record = Record("Jane")
 
-    address = record.add_address("Privit st. 5")
+    address = record.add_address("Main st. 5")
 
     assert record.address == address
-    assert "address: Privit st. 5" in str(record)
-    assert "address='Privit st. 5'" in repr(record)
+    assert "address: Main st. 5" in str(record)
+    assert "address='Main st. 5'" in repr(record)
     assert record.remove_address() == address
     assert record.address is None
 
@@ -39,7 +39,7 @@ def test_record_rejects_removing_an_unset_address():
 
 def test_record_copy_with_name_preserves_address():
     record = Record("Jane")
-    record.add_address("Privit st. 5")
+    record.add_address("Main st. 5")
 
     renamed = record.copy_with_name("Jane Doe")
 

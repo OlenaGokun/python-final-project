@@ -39,7 +39,7 @@ class TestShowAllContactsCommand:
         record.add_phone("0665556655", "main")
         record.add_phone("0976664466", "home")
         record.add_email("jane@example.com")
-        record.add_address("Privit st. 5")
+        record.add_address("Main st. 5")
         record.add_birthday("21.11.2006")
         book.add_record(record)
         book.add_record(Record("Jane Doe"))
@@ -50,7 +50,7 @@ class TestShowAllContactsCommand:
 
         assert result == (
             "James Webb: 📞 main 0665556655, home 0976664466; "
-            "✉️ jane@example.com; 🏠 Privit st. 5; 🎂 21.11.2006\n"
+            "✉️ jane@example.com; 🏠 Main st. 5; 🎂 21.11.2006\n"
             "Jane Doe: 📞 —; ✉️ —; 🏠 —; 🎂 —"
         )
 
