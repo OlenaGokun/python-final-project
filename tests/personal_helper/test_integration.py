@@ -47,6 +47,10 @@ class TestIntegration:
             ["--name", "Alex Rivera", "--email", "alex@example.com"],
         ) == "✅ Email added for Alex Rivera."
         assert run(
+            "add-address",
+            ["--name", "Alex Rivera", "--address", "Privit", "st.", "5"],
+        ) == "✅ Address added for Alex Rivera."
+        assert run(
             "add-birthday",
             ["--name", "Alex Rivera", "--birthday", "03.01.2000"],
         ) == "✅ Birthday added for Alex Rivera."
@@ -71,6 +75,7 @@ class TestIntegration:
         assert "Alex Rivera" in contacts
         assert "No Birthday" in contacts
         assert "alex@example.com" in contacts
+        assert "Privit st. 5" in contacts
 
         class FixedDate(date):
             @classmethod
@@ -96,6 +101,10 @@ class TestIntegration:
                 "alice@north.example",
                 "--birthday",
                 "10.02.1990",
+                "--address",
+                "12",
+                "North",
+                "Street",
             ],
         )
         self.run(
@@ -111,6 +120,9 @@ class TestIntegration:
                 "bob@south.example",
                 "--birthday",
                 "20.03.1985",
+                "--address",
+                "South",
+                "Road",
             ],
         )
 
@@ -120,11 +132,16 @@ class TestIntegration:
         assert "Alice Smith" in run(["--query", "10.02.1990"])
         assert "Alice Smith" in run(["--name", "Alice"])
         assert "Alice Smith" in run(["--email", "NORTH"])
+        assert "Alice Smith" in run(["--address", "north street"])
         assert "Bob Smith" in run(["--phone", "9876"])
         assert "Bob Smith" in run(["--birthday", "20.03"])
         assert run(["--name", "Smith", "--email", "north.example"]) == (
-            "Contact name: Alice Smith, phones: 5012345671, "
-            "email: alice@north.example, birthday: 10.02.1990"
+            "Alice Smith\n"
+            "    phones:\n"
+            "              5012345671\n"
+            "    email:    alice@north.example\n"
+            "    address:  12 North Street\n"
+            "    birthday: 10.02.1990"
         )
         assert run(["--name", "Alice", "--email", "south.example"]) == (
             "ℹ️  No contacts found."
@@ -167,27 +184,27 @@ class TestIntegration:
         ) == "✅ Note 'Travel plans' added."
 
         assert run("search-notes", ["--query", "grocery"]) == (
-            "Grocery list: Buy milk and bread [tags: food, home]"
+            "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
         )
         assert run("search-notes", ["--query", "food"]) == (
-            "Grocery list: Buy milk and bread [tags: food, home]"
+            "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
         )
         assert run("search-notes", ["--query", "train"]) == (
-            "Travel plans: Book train [tags: travel]"
+            "Travel plans\n    text: Book train\n    tags: travel"
         )
         assert run("search-notes", ["--title", "grocery"]) == (
-            "Grocery list: Buy milk and bread [tags: food, home]"
+            "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
         )
         assert run("search-notes", ["--text", "BREAD"]) == (
-            "Grocery list: Buy milk and bread [tags: food, home]"
+            "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
         )
         assert run("search-notes", ["--tags", "HOME"]) == (
-            "Grocery list: Buy milk and bread [tags: food, home]"
+            "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
         )
         assert run(
             "search-notes",
             ["--title", "grocery", "--text", "milk", "--tags", "home"],
-        ) == "Grocery list: Buy milk and bread [tags: food, home]"
+        ) == "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
         assert run(
             "search-notes",
             ["--title", "grocery", "--text", "milk", "--tags", "travel"],
@@ -216,7 +233,7 @@ class TestIntegration:
             ],
         ) == "✅ Note 'Grocery list' updated."
         assert run("search-notes", ["--query", "coffee"]) == (
-            "Grocery list: Buy coffee [tags: drinks, home]"
+            "Grocery list\n    text: Buy coffee\n    tags: drinks, home"
         )
         assert run(
             "delete-note-tags",

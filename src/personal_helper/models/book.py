@@ -119,6 +119,7 @@ class AddressBook(UserDict):
         name=None,
         email=None,
         phone=None,
+        address=None,
         birthday=None,
     ):
         """Find contacts by a broad query or by every supplied field filter."""
@@ -126,6 +127,7 @@ class AddressBook(UserDict):
             "name": name,
             "email": email,
             "phone": phone,
+            "address": address,
             "birthday": birthday,
         }
         active_filters = {
@@ -145,6 +147,7 @@ class AddressBook(UserDict):
                 "name": [record.name.value],
                 "email": [record.email.value] if record.email else [],
                 "phone": [item.value for item in record.phones],
+                "address": [record.address.value] if record.address else [],
                 "birthday": [str(record.birthday)] if record.birthday else [],
             }
             if "query" in active_filters:

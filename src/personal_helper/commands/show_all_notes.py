@@ -18,11 +18,5 @@ class ShowAllNotesCommand(NotebookCommand):
         if not notebook.data:
             return "ℹ️  No notes found."
         return "\n".join(
-            f"{note.title}: {note.text}"
-            + (
-                f" [tags: {', '.join(sorted(tag.value for tag in note.tags))}]"
-                if note.tags
-                else ""
-            )
-            for note in notebook.data.values()
+            self.format_note_compact(note) for note in notebook.data.values()
         )

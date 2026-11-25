@@ -1,5 +1,6 @@
 import functools
 from .exceptions import CommandError
+from .formatting import error_message
 
 
 def input_error(func):
@@ -12,10 +13,9 @@ def input_error(func):
         except CommandError as e:
             # CommandError and all subclasses have user-friendly messages
             # Includes all domain and input validation errors
-            return f"❌ {str(e)}"
+            return error_message(f"❌ {str(e)}")
         except Exception as e:
             # Unexpected error - should not happen in normal operation
-            return f"⚠️ Unexpected error: {e}"
+            return error_message(f"⚠️ Unexpected error: {e}")
 
     return inner
-

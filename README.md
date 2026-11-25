@@ -6,7 +6,7 @@ A command-line application for managing contacts and independent text notes.
 
 - Store and manage contacts
 - Add phone numbers and change existing ones
-- Add email addresses and search contacts by name, phone, email, or birthday
+- Add email addresses and physical addresses, and search contacts by any contact field
 - Track birthdays and get reminders
 - Add, update, delete, and search notes
 - Interactive help system
@@ -79,7 +79,7 @@ python -m coverage html
 - `help` — Show all available commands
 - `help --command <command>` — Show details for a specific command
 - `hello` — Get a greeting from the bot
-- `add-contact --name <name> [--phone <phone> ...] [--email <email>] [--birthday <DD.MM.YYYY>]` — Add a contact or update its details
+- `add-contact --name <name> [--phone <phone> ...] [--email <email>] [--address <address>] [--birthday <DD.MM.YYYY>]` — Add a contact or update its details
 - `add-phone --name <name> --phone <phone> [--alias <alias>]` — Add a phone, or create the contact and add its first phone
 - `change-phone --name <name> --old-phone <phone-or-alias> --new-phone <phone>` — Change a phone number
 - `delete-phone --name <name> --phone <phone-or-alias>` — Remove a specific phone number
@@ -91,7 +91,9 @@ python -m coverage html
 - `show-birthdays [--days <days>]` — Show upcoming birthdays for 1 to 365 days ahead, including today. Defaults to 7 days.
 - `add-email --name <name> --email <email>` — Add or update a contact's email
 - `delete-email --name <name>` — Remove a contact's email
-- `search-contacts (--query <query> | [--name <name>] [--email <email>] [--phone <phone>] [--birthday <DD.MM.YYYY>])` — Search contacts by a query or field filters
+- `add-address --name <name> --address <address>` — Add or update a contact's address
+- `delete-address --name <name>` — Remove a contact's address
+- `search-contacts (--query <query> | [--name <name>] [--email <email>] [--phone <phone>] [--address <address>] [--birthday <DD.MM.YYYY>])` — Search contacts by a query or field filters
 - `add-note --title <title> --text <text> [--tags <tag> ...]` — Add a note with optional tags
 - `update-note --title <title> [--text <text>] [--tags <tag> ...]` — Update text or replace tags
 - `delete-note --title <title>` — Delete a note
@@ -104,6 +106,15 @@ python -m coverage html
 `add-phone` defaults to the `main` alias. An alias can be any single word and must
 be unique within the contact, ignoring case. Use `phone --name <name>` to see
 each saved alias next to its number.
+
+`search-contacts` displays each matching contact in an indented, detailed view.
+`show-all-contacts` displays each contact on one compact line with icons.
+Missing fields are shown as `—`. Names, field labels, and phone aliases are
+colored when output goes to a terminal.
+Likewise, `show-all-notes` displays compact lines, while `search-notes` shows
+the title, text, and tags in an indented view. A note without tags shows `—`
+in the detailed view.
+Error messages are red in a terminal; redirected output contains no color codes.
 
 ```text
 add-phone --name Jane --phone 5550009999
@@ -122,7 +133,8 @@ whitespace is normalized to single spaces. For example:
 
 ```text
 add-contact --name Mary Jane --phone 0501234567 0501234568 --email mary@example.com --birthday 01.01.2000
-search-contacts --name Mary Jane --email example.com
+add-address --name Mary Jane --address Privit st. 5
+search-contacts --name Mary Jane --address Privit st.
 search-contacts --query 0501234567
 search-notes --title Grocery list --tags food home
 search-notes --query shopping
@@ -135,9 +147,10 @@ add-note-tags --title Grocery list --tags shopping
 Note titles must be unique, ignoring case. Search commands require either a
 `--query` or at least one field filter; `--query` cannot be combined with
 field-specific filters. Text searches are case-insensitive substring matches,
-not exact matches. Contact `--query` searches names, emails, phone numbers, and
-birthdays; individual contact field filters also match substrings. Note
-`--query` searches titles, text, and tags by substring. For note field filters,
+not exact matches. Contact `--query` searches names, emails, phone numbers,
+addresses, and birthdays; individual contact field filters also match
+substrings. Note `--query` searches titles, text, and tags by substring. For
+note field filters,
 `--title` and `--text` match substrings, while `--tags` matches tags exactly,
 ignoring case. Multiple field filters for either contacts or notes are combined
 with AND; any one supplied note tag may match. For example,

@@ -1,7 +1,11 @@
 from collections.abc import Iterable
 
-from .fields import Name, Phone, Birthday, Email
-from personal_helper.core import CommandError, DuplicatePhoneError, PhoneNotFoundError
+from .fields import Address, Name, Phone, Birthday, Email
+from personal_helper.core import (
+    CommandError,
+    DuplicatePhoneError,
+    PhoneNotFoundError,
+)
 
 
 class Record:
@@ -10,6 +14,7 @@ class Record:
         self._phones = []
         self._birthday = None
         self._email = None
+        self._address = None
 
     @property
     def name(self) -> Name:
@@ -28,11 +33,16 @@ class Record:
     def email(self) -> Email | None:
         return getattr(self, "_email", None)
 
+    @property
+    def address(self) -> Address | None:
+        return getattr(self, "_address", None)
+
     def copy_with_name(self, name: str) -> "Record":
         replacement = Record(name)
         replacement._phones = list(self.phones)
         replacement._birthday = self.birthday
         replacement._email = self.email
+        replacement._address = self.address
         return replacement
 
     def add_birthday(self, birthday):
@@ -106,11 +116,24 @@ class Record:
         self._email = None
         return email
 
+    def add_address(self, address: str) -> Address:
+        new_address = Address(address)
+        self._address = new_address
+        return new_address
+
+    def remove_address(self) -> Address:
+        address = self.address
+        if address is None:
+            raise CommandError(f"Address not set for {self.name}.")
+        self._address = None
+        return address
+
     def update_details(
         self,
         phones: Iterable[str] = (),
         email: str | None = None,
         birthday: str | None = None,
+        address: str | None = None,
     ) -> None:
         updated_phones = list(self._phones)
         for value in phones:
@@ -120,19 +143,24 @@ class Record:
 
         new_email = Email(email) if email is not None else None
         new_birthday = Birthday(birthday) if birthday is not None else None
+        new_address = Address(address) if address is not None else None
 
         self._phones = updated_phones
         if new_email is not None:
             self._email = new_email
         if new_birthday is not None:
             self._birthday = new_birthday
+        if new_address is not None:
+            self._address = new_address
 
     def __str__(self):
         birthday_str = f", birthday: {self.birthday}" if self.birthday else ""
         email_str = f", email: {self.email}" if self.email else ""
-        return f"Contact name: {self.name.value}, phones: {'; '.join(map(str, self.phones))}{email_str}{birthday_str}"
+        address_str = f", address: {self.address}" if self.address else ""
+        return f"Contact name: {self.name.value}, phones: {'; '.join(map(str, self.phones))}{email_str}{address_str}{birthday_str}"
 
     def __repr__(self):
         birthday_repr = f", birthday={self.birthday.value!r}" if self.birthday else ""
         email_repr = f", email={self.email.value!r}" if self.email else ""
-        return f"Record({self.name.value!r}, phones={[p.value for p in self.phones]!r}{email_repr}{birthday_repr})"
+        address_repr = f", address={self.address.value!r}" if self.address else ""
+        return f"Record({self.name.value!r}, phones={[p.value for p in self.phones]!r}{email_repr}{address_repr}{birthday_repr})"

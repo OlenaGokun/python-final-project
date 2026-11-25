@@ -1,6 +1,7 @@
 from personal_helper.commands.base_command import AddressBookCommand
 from personal_helper.core.data import parse_options
 from personal_helper.core.decorators import input_error
+from personal_helper.core.formatting import error_message
 from personal_helper.models.book import AddressBook
 
 
@@ -34,4 +35,4 @@ class DeleteContactCommand(AddressBookCommand):
                 return f"✅ Contact '{display_name}' deleted."
             if answer in ("n", "no"):
                 return "Contact deletion canceled."
-            print("Please enter yes or no.")
+            print(error_message("Please enter yes or no."))

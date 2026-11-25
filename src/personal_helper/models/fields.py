@@ -124,3 +124,10 @@ class Email(Field):
         if not cleaned or not self.EMAIL_PATTERN.match(cleaned):
             raise ValueError(f"Invalid email format: {value!r}.")
         super().__init__(cleaned)
+
+
+class Address(Field):
+    def __init__(self, value):
+        if not isinstance(value, str) or not value.strip():
+            raise InvalidInputError("Address must be a non-empty string.")
+        super().__init__(value.strip())

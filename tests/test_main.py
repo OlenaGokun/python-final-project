@@ -1,9 +1,12 @@
 import pickle
+import io
 
 import pytest
+from colorama import Fore, Style
 
 from personal_helper.command_registry import CommandRegistry
 from personal_helper.core.pickle_manager import load_data, save_data
+from personal_helper.core import formatting
 from personal_helper.models import AddressBook, PersonalHelper, Record
 from main import main, print_commands
 
@@ -24,6 +27,36 @@ def test_main_dispatches_greeting_and_exit_through_registry(monkeypatch, capsys)
     assert len(saves) == 1
 
 
+def test_cli_displays_compact_and_detailed_contacts(monkeypatch, capsys):
+    data = PersonalHelper()
+    contact = data.address_book.add_record(Record("Jane Doe"))
+    contact.add_phone("0505055500", "main")
+    contact.add_email("jane@example.com")
+    contact.add_address("Privit st. 5")
+    contact.add_birthday("21.11.2006")
+    inputs = iter(["show-all-contacts", "search-contacts --name Jane", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    output = capsys.readouterr().out
+    assert (
+        "Jane Doe: 📞 main 0505055500; ✉️ jane@example.com; "
+        "🏠 Privit st. 5; 🎂 21.11.2006\n"
+    ) in output
+    assert (
+        "Jane Doe\n"
+        "    phones:\n"
+        "              main 0505055500\n"
+        "    email:    jane@example.com\n"
+        "    address:  Privit st. 5\n"
+        "    birthday: 21.11.2006\n"
+    ) in output
+    assert "\x1b[" not in output
+
+
 def test_notes_are_searchable_after_cli_save_and_reload(monkeypatch, capsys, tmp_path):
     path = tmp_path / "book.pkl"
     monkeypatch.setattr("main.load_data", lambda: load_data(path))
@@ -39,8 +72,9 @@ def test_notes_are_searchable_after_cli_save_and_reload(monkeypatch, capsys, tmp
     main()
     output = capsys.readouterr().out
 
-    assert "Shopping: Buy milk and bread" in output
-    assert output.count("Shopping: Buy milk and bread") == 3
+    assert output.count(
+        "Shopping\n    text: Buy milk and bread\n    tags: food, home"
+    ) == 3
     assert "✅ Note 'shopping' updated." in output
     assert load_data(path).notebook["shopping"].text.value == "Buy coffee"
     assert load_data(path).notebook.search(tags={"home"})[0].text.value == "Buy coffee"
@@ -63,7 +97,7 @@ def test_cli_note_tag_commands(monkeypatch, capsys, tmp_path):
     main()
 
     output = capsys.readouterr().out
-    assert "Shopping: Buy milk" in output
+    assert "Shopping\n    text: Buy milk\n    tags: food, home" in output
     assert "✅ Tags added to note 'Shopping'." in output
     assert "✅ Tags removed from note 'Shopping'." in output
     assert "ℹ️  No notes found." in output
@@ -94,7 +128,7 @@ def test_cli_multiword_names_and_titles_without_quotes(monkeypatch, capsys, tmp_
     output = capsys.readouterr().out
     assert "5012345671" in output
     assert "Mary Jane's birthday: 01.01.2000" in output
-    assert "Grocery list: Buy bread" in output
+    assert "Grocery list\n    text: Buy bread\n    tags: home, new" in output
     assert "❌" not in output
     data = load_data(path)
     assert data.address_book["MARY JANE"].phones[0].value == "5099999999"
@@ -136,7 +170,7 @@ def test_print_commands_uses_registry_for_every_command(capsys):
     assert "close" not in output
     assert (
         "add-contact --name <name> [--phone <phone> ...] [--email <email>] "
-        "[--birthday <DD.MM.YYYY>]"
+        "[--address <address>] [--birthday <DD.MM.YYYY>]"
     ) in output
 
 
@@ -168,6 +202,55 @@ def test_main_handles_empty_unknown_and_failing_commands(monkeypatch, capsys):
     assert "Error: command failed" in output
     assert "Good bye!" in output
     assert len(saves) == 1
+
+
+def test_main_colors_errors_in_terminal(monkeypatch):
+    class Terminal(io.StringIO):
+        def isatty(self):
+            return True
+
+    terminal = Terminal()
+    inputs = iter(["", "unknown", "search-notes", "exit"])
+    monkeypatch.setattr(formatting.sys, "stdout", terminal)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    monkeypatch.setattr("main.load_data", PersonalHelper)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    output = terminal.getvalue()
+    assert f"{Fore.RED}Please enter a command.{Style.RESET_ALL}" in output
+    assert f"{Fore.RED}Invalid command.{Style.RESET_ALL}" in output
+    assert f"{Fore.RED}❌ Invalid arguments." in output
+    assert "Usage: search-notes" in output
+    assert "Good bye!" in output
+
+
+def test_main_colors_load_and_save_errors_in_terminal(monkeypatch):
+    class Terminal(io.StringIO):
+        def isatty(self):
+            return True
+
+    def fail_load():
+        raise OSError("load failed")
+
+    def fail_save(_):
+        raise OSError("save failed")
+
+    terminal = Terminal()
+    inputs = iter(["exit", "maybe", "yes"])
+    monkeypatch.setattr(formatting.sys, "stdout", terminal)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    monkeypatch.setattr("main.load_data", fail_load)
+    monkeypatch.setattr("main.save_data", fail_save)
+
+    main()
+
+    output = terminal.getvalue()
+    assert f"{Fore.RED}Failed to load application data: load failed{Style.RESET_ALL}" in output
+    assert f"{Fore.RED}Failed to save application data: save failed{Style.RESET_ALL}" in output
+    assert f"{Fore.RED}Please enter yes or no.{Style.RESET_ALL}" in output
+    assert "Starting with empty application data." in output
 
 
 def test_main_retries_after_save_failure_and_invalid_confirmation(
@@ -276,6 +359,7 @@ def test_cli_contact_changes_survive_restart(
     data = PersonalHelper()
     original = Record("Mary Jane")
     original.update_details(["5012345671"], "mary@example.test", "01.01.2000")
+    original.add_address("Privit st. 5")
     data.address_book.add_record(original)
     data.notebook.add("Mary Jane", "Independent note", {"personal"})
     save_data(data, path)
@@ -306,11 +390,12 @@ def test_cli_contact_changes_survive_restart(
         assert (renamed.phones, renamed.email, renamed.birthday) == (
             original.phones, original.email, original.birthday
         )
-        assert f"Contact name: {expected_name}" in output
+        assert renamed.address == original.address
+        assert expected_name in output
     else:
         assert reloaded.address_book.find("Mary Jane") is None
         assert len(reloaded.address_book) == 0
-        assert "Contact name: Mary Jane" not in output
+        assert "ℹ️  No contacts found." in output
 
     note = reloaded.notebook["Mary Jane"]
     assert note.title.value == "Mary Jane"

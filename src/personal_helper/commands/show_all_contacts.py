@@ -17,4 +17,4 @@ class ShowAllContactsCommand(AddressBookCommand):
     def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
         if not address_book.data:
             return "ℹ️  No contacts found."
-        return "\n".join(str(record) for record in address_book.data.values())
+        return self.format_contacts_compact(list(address_book.data.values()))

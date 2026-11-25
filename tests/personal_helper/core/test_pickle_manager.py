@@ -52,6 +52,7 @@ class TestSaveLoad(unittest.TestCase):
         record = Record("John")
         record.add_phone("1234567890")
         record.add_birthday("15.03.1990")
+        record.add_address("Privit st. 5")
         book.add_record(record)
         return book
 
@@ -60,6 +61,9 @@ class TestSaveLoad(unittest.TestCase):
         save_data(PersonalHelper(self._book()), path)
         loaded = load_data(path)
         self.assertEqual(str(loaded.address_book["JOHN"]), str(self._book()["john"]))
+        self.assertEqual(
+            loaded.address_book["JOHN"].address.value, "Privit st. 5"
+        )
 
     def test_note_round_trip(self):
         path = self.dir / "book.pkl"
@@ -102,9 +106,11 @@ class TestSaveLoad(unittest.TestCase):
         path = self.dir / "book.pkl"
         book = self._book()
         self.assertNotIn("_notes", book.__dict__)
+        del book["John"]._address
         path.write_bytes(pickle.dumps(book))
 
         loaded = load_data(path)
+        self.assertIsNone(loaded.address_book["John"].address)
         self.assertEqual(len(loaded.notebook), 0)
         loaded.notebook.add("shopping", "Buy milk")
         self.assertEqual(loaded.notebook["shopping"].text.value, "Buy milk")

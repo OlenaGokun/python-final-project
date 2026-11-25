@@ -1,7 +1,33 @@
 """Tests for independent note commands."""
 
 import pytest
+from colorama import Fore, Style
+
+from personal_helper.core import formatting
 from personal_helper.models.fields import Tag
+
+
+def test_note_displays_use_color_only_in_terminal(registry, data, monkeypatch):
+    class Terminal:
+        @staticmethod
+        def isatty():
+            return True
+
+    data.notebook.add("Shopping", "Buy milk", {"home", "food"})
+    monkeypatch.setattr(formatting.sys, "stdout", Terminal())
+
+    compact = registry.get_command("show-all-notes").run([], data)
+    detailed = registry.get_command("search-notes").run(["--title", "Shopping"], data)
+
+    assert compact == (
+        f"{Fore.BLUE}{Style.BRIGHT}Shopping:{Style.RESET_ALL} "
+        "Buy milk [tags: food, home]"
+    )
+    assert detailed == (
+        f"{Fore.BLUE}{Style.BRIGHT}Shopping{Style.RESET_ALL}\n"
+        f"    {Fore.BLUE}text:{Style.RESET_ALL} Buy milk\n"
+        f"    {Fore.BLUE}tags:{Style.RESET_ALL} food, home"
+    )
 
 
 @pytest.mark.parametrize(
@@ -24,13 +50,13 @@ def test_note_workflow_without_contacts(registry, data):
     ) == "✅ Note 'Shopping' added."
     assert registry.get_command("search-notes").run(
         ["--text", "MILK", "AND"], data
-    ) == "Shopping: Buy milk and bread"
+    ) == "Shopping\n    text: Buy milk and bread\n    tags: —"
     assert registry.get_command("update-note").run(
         ["--title", "shopping", "--text", "Buy", "coffee"], data
     ) == "✅ Note 'shopping' updated."
     assert registry.get_command("search-notes").run(
         ["--text", "coffee"], data
-    ) == "Shopping: Buy coffee"
+    ) == "Shopping\n    text: Buy coffee\n    tags: —"
     assert registry.get_command("delete-note").run(
         ["--title", "SHOPPING"], data
     ) == "✅ Note 'SHOPPING' deleted."
@@ -144,7 +170,10 @@ def test_search_returns_all_matching_text(registry, data):
 
     result = registry.get_command("search-notes").run(["--text", "MILK"], data)
 
-    assert result == "shopping: Buy milk\nrecipe: Add milk and honey"
+    assert result == (
+        "shopping\n    text: Buy milk\n    tags: —\n\n"
+        "recipe\n    text: Add milk and honey\n    tags: —"
+    )
 
 
 @pytest.mark.parametrize(
@@ -158,34 +187,34 @@ def test_search_returns_all_matching_text(registry, data):
         ),
         (
             ["--title", "shop"],
-            "Shopping: Buy milk and bread [tags: food, home]\n"
-            "ShopTrip: Buy milk [tags: travel]",
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home\n\n"
+            "ShopTrip\n    text: Buy milk\n    tags: travel",
         ),
         (
             ["--text", "MILK", "AND"],
-            "Shopping: Buy milk and bread [tags: food, home]\n"
-            "Recipe: Buy milk and bread [tags: food]",
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home\n\n"
+            "Recipe\n    text: Buy milk and bread\n    tags: food",
         ),
         (
             ["--tags", "HOME", "travel"],
-            "Shopping: Buy milk and bread [tags: food, home]\n"
-            "ShopTrip: Buy milk [tags: travel]",
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home\n\n"
+            "ShopTrip\n    text: Buy milk\n    tags: travel",
         ),
         (
             ["--title", "shop", "--text", "milk", "and"],
-            "Shopping: Buy milk and bread [tags: food, home]",
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home",
         ),
         (
             ["--tags", "food", "--title", "shop"],
-            "Shopping: Buy milk and bread [tags: food, home]",
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home",
         ),
         (
             ["--text", "milk", "and", "--tags", "home"],
-            "Shopping: Buy milk and bread [tags: food, home]",
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home",
         ),
         (
             ["--text", "milk", "--tags", "missing", "food", "--title", "shopping"],
-            "Shopping: Buy milk and bread [tags: food, home]",
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home",
         ),
         (["--title", "shoptrip", "--tags", "food"], "ℹ️  No notes found."),
     ],
@@ -225,8 +254,8 @@ def test_find_notes_by_query(registry, data):
     )
 
     assert result == (
-        "Shopping: Buy milk [tags: groceries]\n"
-        "Plans: Call the grocery store [tags: personal]"
+        "Shopping\n    text: Buy milk\n    tags: groceries\n\n"
+        "Plans\n    text: Call the grocery store\n    tags: personal"
     )
 
 
@@ -239,8 +268,8 @@ def test_find_notes_query_matches_title_text_or_tags(registry, data):
     )
 
     assert result == (
-        "Shopping: Buy milk [tags: groceries]\n"
-        "Plans: Call the store [tags: grocery]"
+        "Shopping\n    text: Buy milk\n    tags: groceries\n\n"
+        "Plans\n    text: Call the store\n    tags: grocery"
     )
 
 
@@ -262,7 +291,7 @@ def test_find_notes_field_filters_use_and_semantics(registry, data):
         ["--title", "shopping", "--text", "milk", "--tags", "home"], data
     )
 
-    assert result == "Shopping list: Buy milk [tags: home]"
+    assert result == "Shopping list\n    text: Buy milk\n    tags: home"
 
 
 def test_find_notes_combines_fields_with_and(registry, data):
@@ -274,7 +303,7 @@ def test_find_notes_combines_fields_with_and(registry, data):
         ["--title", "shopping", "--text", "milk", "--tags", "home"], data
     )
 
-    assert result == "Shopping list: Buy milk [tags: home]"
+    assert result == "Shopping list\n    text: Buy milk\n    tags: home"
 
 
 def test_tag_commands(registry, data):
@@ -290,8 +319,8 @@ def test_tag_commands(registry, data):
     assert registry.get_command("search-notes").run(
         ["--tags", "FOOD", "travel"], data
     ) == (
-        "shopping: Buy milk [tags: food, personal]\n"
-        "holiday: Pack bags [tags: personal, travel]"
+        "shopping\n    text: Buy milk\n    tags: food, personal\n\n"
+        "holiday\n    text: Pack bags\n    tags: personal, travel"
     )
     assert registry.get_command("delete-note-tags").run(
         ["--title", "shopping", "--tags", "food"], data
@@ -299,7 +328,7 @@ def test_tag_commands(registry, data):
     assert registry.get_command("search-notes").run(["--tags", "food"], data) == "ℹ️  No notes found."
     assert registry.get_command("search-notes").run(
         ["--title", "HOLI"], data
-    ) == "holiday: Pack bags [tags: personal, travel]"
+    ) == "holiday\n    text: Pack bags\n    tags: personal, travel"
 
 
 @pytest.mark.parametrize(

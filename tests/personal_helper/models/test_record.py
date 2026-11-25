@@ -3,6 +3,7 @@ import unittest
 from personal_helper.models.fields import Name, Phone
 from personal_helper.models.record import Record
 from personal_helper.core import (
+    CommandError,
     DuplicatePhoneError,
     InvalidBirthdayFormatError,
     InvalidNameError,
@@ -75,6 +76,15 @@ class TestFindPhone(unittest.TestCase):
 
     def test_unknown_phone_returns_none(self):
         self.assertIsNone(self.record.find_phone("0000000000"))
+
+    def test_invalid_selector_returns_none(self):
+        for selector in (None, "not-a-phone"):
+            with self.subTest(selector=selector):
+                self.assertIsNone(self.record.find_phone(selector))
+
+    def test_alias_matches_case_insensitively(self):
+        phone = self.record.add_phone("1112223333", "Work")
+        self.assertIs(self.record.find_phone("work"), phone)
 
 class TestRemovePhone(unittest.TestCase):
     def setUp(self):
@@ -163,6 +173,18 @@ class TestUpdateDetails(unittest.TestCase):
         )
         self.assertIsNone(self.record.email)
 
+class TestRemoveOptionalDetails(unittest.TestCase):
+    def test_removing_unset_birthday_or_email_raises(self):
+        record = Record("John")
+        for method, message in (
+            (record.remove_birthday, "Birthday not set for John."),
+            (record.remove_email, "Email not set for John."),
+        ):
+            with self.subTest(method=method.__name__):
+                with self.assertRaises(CommandError) as error:
+                    method()
+                self.assertEqual(str(error.exception), message)
+
 class TestRecordStr(unittest.TestCase):
     def test_matches_the_expected_format(self):
         record = Record("John")
@@ -184,6 +206,7 @@ def test_copy_with_name_preserves_legacy_details_and_owns_its_phone_list():
     original.add_phone("5012345671")
     original.add_phone("5099999999")
     original.add_birthday("01.01.2000")
+    original.add_address("Privit st. 5")
     del original._email
 
     replacement = original.copy_with_name("Mary Doe")
@@ -192,6 +215,7 @@ def test_copy_with_name_preserves_legacy_details_and_owns_its_phone_list():
     assert original.name.value == "Mary Jane"
     assert replacement.phones == original.phones
     assert replacement.birthday == original.birthday
+    assert replacement.address == original.address
     assert replacement.email is None
     replacement.remove_phone("5012345671")
     assert len(original.phones) == 2
