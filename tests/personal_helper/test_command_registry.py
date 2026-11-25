@@ -70,7 +70,7 @@ def test_discovers_commands_and_returns_them_by_name():
         "exit",
         "help",
         "hello",
-        "phone",
+        "show-contact",
         "search-contacts",
     } <= set(registry.commands)
     assert isinstance(registry.get_command("add-contact"), BaseCommand)
@@ -79,6 +79,7 @@ def test_discovers_commands_and_returns_them_by_name():
     assert registry.get_command("exit") is not None
     assert registry.get_command("close") is None
     assert registry.get_command("all") is None
+    assert registry.get_command("phone") is None
 
 
 def test_ignores_imported_and_abstract_command_classes(monkeypatch):

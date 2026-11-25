@@ -110,7 +110,7 @@ def test_cli_multiword_names_and_titles_without_quotes(monkeypatch, capsys, tmp_
     monkeypatch.setattr("main.save_data", lambda data: save_data(data, path))
     inputs = iter([
         "add-contact --phone 5012345671 --name Mary Jane",
-        "phone --name mary jane",
+        "show-contact --name mary jane",
         "add-birthday --birthday 01.01.2000 --name Mary Jane",
         "show-birthday --name Mary Jane",
         "change-phone --new-phone 5099999999 --name Mary Jane --old-phone 5012345671",

@@ -76,7 +76,7 @@ def test_registry_discovers_specialized_and_general_commands(registry):
         "add-contact",
         "add-address",
         "change-phone",
-        "phone",
+        "show-contact",
         "show-all-contacts",
         "add-birthday",
         "show-birthday",

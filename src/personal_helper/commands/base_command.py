@@ -42,7 +42,7 @@ class BaseCommand(ABC):
 
     @abstractmethod
     def get_command_name(self) -> str:
-        """Return the command name (e.g., 'add', 'phone')"""
+        """Return the command name (e.g., 'add-contact', 'show-contact')"""
         pass
 
     @abstractmethod
