@@ -35,3 +35,40 @@ def book_with_contacts(book):
     book.add_record(record2)
 
     return book
+
+
+@pytest.fixture
+def cli_turns(monkeypatch, capsys, registry, data):
+    """Capture the output between successive CLI command prompts."""
+    from main import main
+
+    class EndSession(Exception):
+        pass
+
+    monkeypatch.setattr("main.CommandRegistry", lambda: registry)
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda data: None)
+
+    def run(submissions):
+        inputs = iter(submissions)
+        turns = []
+
+        def read(prompt):
+            assert prompt == "Enter a command: "
+            turns.append(capsys.readouterr().out.splitlines())
+            try:
+                return next(inputs)
+            except StopIteration:
+                raise EndSession from None
+
+        monkeypatch.setattr("builtins.input", read)
+        if "exit" in registry.commands:
+            main()
+            assert capsys.readouterr().out.strip() == "Good bye!"
+        else:
+            with pytest.raises(EndSession):
+                main()
+
+        return turns[1:]
+
+    return run
