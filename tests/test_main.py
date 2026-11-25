@@ -110,7 +110,7 @@ def test_cli_multiword_names_and_titles_without_quotes(monkeypatch, capsys, tmp_
     monkeypatch.setattr("main.save_data", lambda data: save_data(data, path))
     inputs = iter([
         "add-contact --phone 5012345671 --name Mary Jane",
-        "phone --name mary jane",
+        "show-contact --name mary jane",
         "add-birthday --birthday 01.01.2000 --name Mary Jane",
         "show-birthday --name Mary Jane",
         "change-phone --new-phone 5099999999 --name Mary Jane --old-phone 5012345671",
@@ -204,6 +204,165 @@ def test_main_handles_empty_unknown_and_failing_commands(monkeypatch, capsys):
     assert len(saves) == 1
 
 
+def test_cli_retries_invalid_contact_fields_without_losing_other_values(monkeypatch, capsys):
+    data = PersonalHelper()
+    inputs = iter([
+        "add-contact --name Jane --phone 0501234567 bad 0501234569 "
+        "--email bad-email --address Main st. 5 --birthday 01.01.1990",
+        "still-bad",
+        "0501234568",
+        "jane@example.com",
+        "exit",
+    ])
+    prompts = []
+
+    def read_input(prompt):
+        prompts.append(prompt)
+        return next(inputs)
+
+    monkeypatch.setattr("builtins.input", read_input)
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    record = data.address_book["Jane"]
+    assert [phone.value for phone in record.phones] == [
+        "0501234567", "0501234568", "0501234569"
+    ]
+    assert record.email.value == "jane@example.com"
+    assert record.address.value == "Main st. 5"
+    assert str(record.birthday) == "01.01.1990"
+    assert prompts.count("Enter a valid phone (or cancel): ") == 2
+    assert prompts.count("Enter a valid email (or cancel): ") == 1
+    output = capsys.readouterr().out
+    assert output.count("❌ Phone must be exactly 10 digits") == 2
+    assert "❌ Invalid email format" in output
+    assert "✅ Contact 'Jane' added." in output
+
+
+@pytest.mark.parametrize(
+    ("command", "replacement", "field"),
+    [
+        ("add-phone --name Jane --phone bad --alias work", "0501234568", "phone"),
+        ("change-phone --name Jane --old-phone 0501234567 --new-phone bad", "0501234569", "phone"),
+        ("add-email --name Jane --email bad", "jane@example.com", "email"),
+    ],
+)
+def test_cli_retries_other_contact_commands(monkeypatch, capsys, command, replacement, field):
+    data = PersonalHelper()
+    record = data.address_book.add_record(Record("Jane"))
+    record.add_phone("0501234567")
+    inputs = iter([command, replacement, "exit"])
+    prompts = []
+
+    def read_input(prompt):
+        prompts.append(prompt)
+        return next(inputs)
+
+    monkeypatch.setattr("builtins.input", read_input)
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    assert f"Enter a valid {field} (or cancel): " in prompts
+    assert "❌" in capsys.readouterr().out
+    if field == "email":
+        assert record.email.value == replacement
+    else:
+        assert replacement in [phone.value for phone in record.phones]
+        if command.startswith("change-phone"):
+            assert record.find_phone("0501234567") is None
+        else:
+            assert record.find_phone(replacement).alias == "work"
+
+
+@pytest.mark.parametrize("cancel", ["cancel", "CANCEL", EOFError, KeyboardInterrupt])
+def test_cli_cancel_retry_does_not_change_existing_contact(monkeypatch, capsys, cancel):
+    data = PersonalHelper()
+    record = data.address_book.add_record(Record("Jane"))
+    record.add_phone("0501234567")
+    record.add_email("old@example.com")
+    inputs = iter([
+        "add-contact --name Jane --phone 0501234568 --email invalid",
+        cancel,
+        "exit",
+    ])
+
+    def read_input(_):
+        value = next(inputs)
+        if isinstance(value, type) and issubclass(value, BaseException):
+            raise value
+        return value
+
+    monkeypatch.setattr("builtins.input", read_input)
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    assert [phone.value for phone in record.phones] == ["0501234567"]
+    assert record.email.value == "old@example.com"
+    assert "❌ Command canceled." in capsys.readouterr().out
+
+
+def test_cli_cancel_retry_does_not_create_new_contact(monkeypatch, capsys):
+    data = PersonalHelper()
+    inputs = iter(["add-contact --name Jane --phone invalid", "cancel", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    assert data.address_book.find("Jane") is None
+    assert "❌ Command canceled." in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "add-phone --name Jane --phone invalid --alias work",
+        "change-phone --name Jane --old-phone 0501234567 --new-phone invalid",
+        "add-email --name Jane --email invalid",
+    ],
+)
+def test_cli_cancel_retry_does_not_change_contact_for_other_commands(
+    monkeypatch, capsys, command
+):
+    data = PersonalHelper()
+    record = data.address_book.add_record(Record("Jane"))
+    record.add_phone("0501234567")
+    record.add_email("old@example.com")
+    inputs = iter([command, "cancel", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    assert [phone.value for phone in record.phones] == ["0501234567"]
+    assert record.email.value == "old@example.com"
+    assert "❌ Command canceled." in capsys.readouterr().out
+
+
+def test_cli_does_not_retry_new_phone_when_old_phone_is_missing(monkeypatch, capsys):
+    data = PersonalHelper()
+    data.address_book.add_record(Record("Jane"))
+    inputs = iter([
+        "change-phone --name Jane --old-phone 0501234567 --new-phone invalid",
+        "exit",
+    ])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    monkeypatch.setattr("main.load_data", lambda: data)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    assert "Phone 0501234567 not found" in capsys.readouterr().out
+
+
 def test_main_colors_errors_in_terminal(monkeypatch):
     class Terminal(io.StringIO):
         def isatty(self):
@@ -224,6 +383,25 @@ def test_main_colors_errors_in_terminal(monkeypatch):
     assert f"{Fore.RED}❌ Invalid arguments." in output
     assert "Usage: search-notes" in output
     assert "Good bye!" in output
+
+
+def test_cli_colors_field_retry_error_in_terminal(monkeypatch):
+    class Terminal(io.StringIO):
+        def isatty(self):
+            return True
+
+    terminal = Terminal()
+    inputs = iter(["add-contact --name Jane --email invalid", "cancel", "exit"])
+    monkeypatch.setattr(formatting.sys, "stdout", terminal)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    monkeypatch.setattr("main.load_data", PersonalHelper)
+    monkeypatch.setattr("main.save_data", lambda _: None)
+
+    main()
+
+    output = terminal.getvalue()
+    assert f"{Fore.RED}❌ Invalid email format: 'invalid'.{Style.RESET_ALL}" in output
+    assert f"{Fore.RED}❌ Command canceled.{Style.RESET_ALL}" in output
 
 
 def test_main_colors_load_and_save_errors_in_terminal(monkeypatch):

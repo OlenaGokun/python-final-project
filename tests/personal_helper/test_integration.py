@@ -69,8 +69,11 @@ class TestIntegration:
                 "5099999999",
             ],
         ) == "✅ Contact 'Alex Rivera' updated."
-        phones = run("phone", ["--name", "Alex Rivera"])
-        assert phones == "5099999999; 5012345672"
+        contact = run("show-contact", ["--name", "Alex Rivera"])
+        assert "5099999999" in contact and "5012345672" in contact
+        assert "alex@example.com" in contact
+        assert "Main st. 5" in contact
+        assert "03.01.2000" in contact
         contacts = run("show-all-contacts")
         assert "Alex Rivera" in contacts
         assert "No Birthday" in contacts

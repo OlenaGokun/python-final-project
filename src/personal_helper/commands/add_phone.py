@@ -1,11 +1,12 @@
 from personal_helper.commands.base_command import AddressBookCommand
+from personal_helper.commands.contact_field_retry import ContactFieldRetry
 from personal_helper.core import input_error
 from personal_helper.core.data import parse_options
 from personal_helper.models.book import AddressBook
 from personal_helper.models.record import Record
 
 
-class AddPhoneCommand(AddressBookCommand):
+class AddPhoneCommand(ContactFieldRetry, AddressBookCommand):
     def get_command_name(self) -> str:
         return "add-phone"
 
@@ -27,6 +28,7 @@ class AddPhoneCommand(AddressBookCommand):
         alias = options.get("--alias", ["main"])[0]
         existing = address_book.find(name)
         record = existing if existing is not None else Record(name)
+        phone = self._validate_contact_field(phone, "phone")
         record.add_phone(phone, alias)
         if existing is None:
             address_book.add_record(record)

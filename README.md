@@ -83,7 +83,7 @@ python -m coverage html
 - `add-phone --name <name> --phone <phone> [--alias <alias>]` — Add a phone, or create the contact and add its first phone
 - `change-phone --name <name> --old-phone <phone-or-alias> --new-phone <phone>` — Change a phone number
 - `delete-phone --name <name> --phone <phone-or-alias>` — Remove a specific phone number
-- `phone --name <name>` — Show phone numbers for a contact
+- `show-contact --name <name>` — Show all details for a contact
 - `show-all-contacts` — Show all contacts in the address book
 - `add-birthday --name <name> --birthday <DD.MM.YYYY>` — Add or update a birthday
 - `delete-birthday --name <name>` — Remove a contact's birthday
@@ -104,10 +104,16 @@ python -m coverage html
 - `exit` — Quit the program
 
 `add-phone` defaults to the `main` alias. An alias can be any single word and must
-be unique within the contact, ignoring case. Use `phone --name <name>` to see
+be unique within the contact, ignoring case. Use `show-contact --name <name>` to see
 each saved alias next to its number.
 
-`search-contacts` displays each matching contact in an indented, detailed view.
+When `add-contact`, `add-phone`, `change-phone`, or `add-email` receives an
+invalid phone number or email address, the interactive CLI asks for a replacement
+without requiring the full command again. Enter `cancel` or press Ctrl+D/Ctrl+C
+to cancel the command; no contact changes are applied. Other validation errors,
+such as duplicate phone numbers, are reported as usual.
+
+`show-contact` and `search-contacts` display contacts in an indented, detailed view.
 `show-all-contacts` displays each contact on one compact line with icons.
 Missing fields are shown as `—`. Names, field labels, and phone aliases are
 colored when output goes to a terminal.

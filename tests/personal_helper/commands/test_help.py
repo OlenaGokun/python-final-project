@@ -35,7 +35,7 @@ class TestHelpCommand:
         assert "📚" in result
         assert "Available Commands" in result
         assert "add-contact" in result
-        assert "phone" in result
+        assert "show-contact" in result
 
     def test_help_specific_command(self, registry, book):
         """Test help for specific command"""

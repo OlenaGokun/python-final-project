@@ -31,7 +31,7 @@ def test_phone_alias_lifecycle(registry, data, change_selector, delete_selector)
     ]
     assert run(registry, data, f"change-phone --name Jane --old-phone {change_selector} --new-phone 8889990001").startswith("✅")
     assert record.find_phone("mobile").value == "8889990001"
-    assert "mobile" in run(registry, data, "phone --name Jane")
+    assert "mobile" in run(registry, data, "show-contact --name Jane")
     assert run(registry, data, f"delete-phone --name Jane --phone {delete_selector}").startswith("✅")
     assert [(phone.alias, phone.value) for phone in record.phones] == [
         ("main", "5550009999")
@@ -67,7 +67,7 @@ def test_selector_cannot_point_to_two_phones():
 def test_phone_aliases_with_a_multiword_contact_name(registry, data):
     assert run(registry, data, 'add-phone --name Mary Jane --phone 5550009999 --alias home').startswith("✅")
     assert run(registry, data, 'change-phone --name Mary Jane --old-phone HOME --new-phone 8889990001').startswith("✅")
-    assert run(registry, data, 'phone --name Mary Jane') == "home: 8889990001"
+    assert "home 8889990001" in run(registry, data, 'show-contact --name Mary Jane')
     assert run(registry, data, 'delete-phone --name Mary Jane --phone home').startswith("✅")
 
 
