@@ -58,12 +58,14 @@ def test_discovers_commands_and_returns_them_by_name():
 
     assert {
         "add-contact",
+        "add-address",
         "add-birthday",
         "add-email",
         "show-all-contacts",
         "show-all-notes",
         "show-birthday",
         "show-birthdays",
+        "delete-address",
         "change-phone",
         "exit",
         "help",

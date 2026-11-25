@@ -8,7 +8,7 @@ The project follows a layered architecture with clear separation of concerns:
 
 ### **Domain Layer** (`models/`)
 Core business entities: `AddressBook`, `Record`, `Field`, `Name`, `Phone`,
-`Email`, `Birthday`, `Title`, `Text`, `Tag`, `Note`, and `Notebook`.
+`Email`, `Address`, `Birthday`, `Title`, `Text`, `Tag`, `Note`, and `Notebook`.
 `PersonalHelper` holds an independent address book and notebook.
 Notes are indexed by case-folded title while retaining the original title for display.
 
@@ -16,13 +16,16 @@ Notes are indexed by case-folded title while retaining the original title for di
 Command implementations using the **Registry Pattern** for auto-discovery:
 - Each command inherits from `BaseCommand`
 - Contact and note commands inherit from `AddressBookCommand` and `NotebookCommand`;
-  these pass only the required collection to the command implementation
+  these pass only the required collection to the command implementation and
+  provide compact and detailed formatting helpers for their respective records
 - Automatically discovered at startup via class scanning
 - A command module import failure stops startup and propagates the original error
 - Startup also fails if no commands are discovered
 - Command names are validated, and duplicate names are rejected
 - Shutdown requests are handled by the application
 - The initialized registry is injected into commands after discovery for shared lookups
+- Commands depend on the read-only `CommandLookup` protocol rather than the
+  concrete registry; help uses it to list and look up commands
 - No registration decorator is needed; inheritance is the discovery signal
 
 ### **Infrastructure Layer** (`core/`)

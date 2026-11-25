@@ -1,9 +1,12 @@
 import pickle
 
+from colorama import just_fix_windows_console
+
 from personal_helper import parse_input, CommandRegistry
 from personal_helper.models import PersonalHelper
 from personal_helper.commands.base_command import ExitRequest
 from personal_helper.core.pickle_manager import load_data, save_data
+from personal_helper.core.formatting import error_message
 
 
 def print_commands(registry: CommandRegistry):
@@ -30,7 +33,7 @@ def confirm_exit(data: PersonalHelper) -> bool:
         save_data(data)
         return True
     except (OSError, pickle.PickleError) as e:
-        print(f"Failed to save application data: {e}")
+        print(error_message(f"Failed to save application data: {e}"))
 
     while True:
         try:
@@ -43,10 +46,11 @@ def confirm_exit(data: PersonalHelper) -> bool:
             return True
         if choice in ("no", "n"):
             return False
-        print("Please enter yes or no.")
+        print(error_message("Please enter yes or no."))
 
 
 def main():
+    just_fix_windows_console()
     registry = CommandRegistry()
     try:
         data = load_data()
@@ -60,7 +64,7 @@ def main():
         TypeError,
         ValueError,
     ) as e:
-        print(f"Failed to load application data: {e}")
+        print(error_message(f"Failed to load application data: {e}"))
         print("Starting with empty application data.")
         data = PersonalHelper()
 
@@ -78,18 +82,18 @@ def main():
         command, *args = parse_input(user_input)
 
         if not command:
-            print("Please enter a command.")
+            print(error_message("Please enter a command."))
             continue
 
         cmd = registry.get_command(command)
         if cmd is None:
-            print("Invalid command.")
+            print(error_message("Invalid command."))
             continue
 
         try:
             result = cmd.run(args, data)
         except Exception as e:
-            print(f"Error: {e}")
+            print(error_message(f"Error: {e}"))
             continue
 
         if isinstance(result, ExitRequest):

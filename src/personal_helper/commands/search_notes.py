@@ -42,12 +42,4 @@ class SearchNotesCommand(NotebookCommand):
         notes = notebook.search(**values)
         if not notes:
             return "ℹ️  No notes found."
-        return "\n".join(
-            f"{note.title}: {note.text}"
-            + (
-                f" [tags: {', '.join(sorted(tag.value for tag in note.tags))}]"
-                if note.tags
-                else ""
-            )
-            for note in notes
-        )
+        return "\n\n".join(self.format_note_details(note) for note in notes)

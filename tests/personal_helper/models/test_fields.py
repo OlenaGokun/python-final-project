@@ -2,7 +2,7 @@
 
 import unittest
 from personal_helper.models.fields import Field, Name, Phone, Birthday, Tag, Text, Title
-from personal_helper.core import InvalidNameError, InvalidPhoneFormatError, InvalidBirthdayFormatError, InvalidNoteError
+from personal_helper.core import InvalidInputError, InvalidNameError, InvalidPhoneFormatError, InvalidBirthdayFormatError, InvalidNoteError
 
 
 class TestField(unittest.TestCase):
@@ -88,6 +88,11 @@ class TestPhone(unittest.TestCase):
         with self.assertRaises(InvalidPhoneFormatError):
             # Fullwidth digits
             Phone("１２３４５６７８９０")
+
+    def test_invalid_alias_is_rejected(self):
+        for alias in ("", "two words", 123):
+            with self.subTest(alias=alias), self.assertRaises(InvalidInputError):
+                Phone("1234567890", alias)
 
     def test_error_message_mentions_the_value(self):
         with self.assertRaises(InvalidPhoneFormatError) as context:

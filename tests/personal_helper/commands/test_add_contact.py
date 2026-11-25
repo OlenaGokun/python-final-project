@@ -49,6 +49,15 @@ class TestAddCommand:
         assert record.email.value == "alice@example.com"
         assert str(record.birthday) == "25.12.1990"
 
+    def test_add_new_contact_with_address(self, registry, book):
+        result = registry.get_command("add-contact").run(
+            ["--name", "Alice", "--address", "Main", "st.", "5"],
+            PersonalHelper(book),
+        )
+
+        assert result == "✅ Contact 'Alice' added."
+        assert book["Alice"].address.value == "Main st. 5"
+
     def test_add_new_contact_with_multiple_phones(self, registry, book):
         cmd = registry.get_command("add-contact")
         result = cmd.run(
@@ -152,6 +161,16 @@ class TestAddCommand:
         assert result == "✅ Contact 'John' updated."
         assert record.email.value == "john@example.com"
         assert str(record.birthday) == "25.12.1990"
+
+    def test_add_contact_updates_existing_address(self, registry, book_with_contacts):
+        command = registry.get_command("add-contact")
+        result = command.run(
+            ["--name", "John", "--address", "Main", "st.", "5"],
+            PersonalHelper(book_with_contacts),
+        )
+
+        assert result == "✅ Contact 'John' updated."
+        assert book_with_contacts["John"].address.value == "Main st. 5"
 
     @pytest.mark.parametrize(
         ("options", "error"),

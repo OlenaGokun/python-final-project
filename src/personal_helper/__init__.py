@@ -1,7 +1,16 @@
 """Personal Helper Bot's address book and command system."""
 
 # Domain models
-from personal_helper.models import AddressBook, Record, Field, Name, Phone, Birthday, Email
+from personal_helper.models import (
+    Address,
+    AddressBook,
+    Birthday,
+    Email,
+    Field,
+    Name,
+    Phone,
+    Record,
+)
 
 # Commands
 from personal_helper.command_registry import CommandRegistry
@@ -24,6 +33,7 @@ from personal_helper.core import (
 __all__ = [
     # Models
     "AddressBook",
+    "Address",
     "Record",
     "Field",
     "Name",

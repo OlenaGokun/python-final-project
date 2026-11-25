@@ -1,5 +1,9 @@
 import pytest
+import io
 
+from colorama import Fore, Style
+
+from personal_helper.core import formatting
 from personal_helper.models import Record
 
 
@@ -47,3 +51,20 @@ def test_delete_contact_reprompts_then_cancels(registry, data, monkeypatch, caps
     assert result == "Contact deletion canceled."
     assert data.address_book["Mary Jane"] is original
     assert capsys.readouterr().out.count("Please enter yes or no.") == 2
+
+
+def test_delete_contact_colors_invalid_confirmation(registry, data, monkeypatch):
+    class Terminal(io.StringIO):
+        def isatty(self):
+            return True
+
+    terminal = Terminal()
+    data.address_book.add_record(Record("Mary Jane"))
+    answers = iter(["maybe", "no"])
+    monkeypatch.setattr(formatting.sys, "stdout", terminal)
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+
+    result = registry.get_command("delete-contact").run(["--name", "Mary Jane"], data)
+
+    assert result == "Contact deletion canceled."
+    assert terminal.getvalue() == f"{Fore.RED}Please enter yes or no.{Style.RESET_ALL}\n"
