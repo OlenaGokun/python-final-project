@@ -107,6 +107,7 @@ python -m coverage html
 - `delete-note --title <title>` — Delete a note
 - `search-notes (--query <query> | [--title <title>] [--text <text>] [--tags <tag> ...])` — Search notes
 - `show-all-notes` — Show all notes
+- `sort-notes-by-tags` — Sort notes by tags
 - `add-note-tags --title <title> --tags <tag> [tag ...]` — Add tags to a note
 - `delete-note-tags --title <title> --tags <tag> [tag ...]` — Remove tags from a note
 - `exit` — Quit the program
@@ -125,8 +126,9 @@ such as duplicate phone numbers, are reported as usual.
 `show-all-contacts` displays each contact on one compact line with icons.
 Missing fields are shown as `—`. Names, field labels, and phone aliases are
 colored when output goes to a terminal.
-Likewise, `show-all-notes` displays compact lines, while `search-notes` shows
-the title, text, and tags in an indented view. A note without tags shows `—`
+Likewise, `show-all-notes` and `sort-notes-by-tags` display compact lines, while `search-notes` shows
+the title, text, and tags in an indented view. `sort-notes-by-tags` orders notes with tags alphabetically 
+by their smallest tag (and then by title on ties), placing notes without tags at the end. A note without tags shows `—`
 in the detailed view.
 Error messages are red in a terminal; redirected output contains no color codes.
 For unknown command names of at least three characters, the application may
