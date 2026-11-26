@@ -1,7 +1,10 @@
 from collections.abc import Callable
 from typing import Literal
 
-from personal_helper.core.exceptions import CommandError, InvalidPhoneFormatError
+from personal_helper.core.exceptions import (
+    CommandError,
+    InvalidPhoneFormatError,
+)
 from personal_helper.models.fields import Email, Phone
 
 
@@ -16,13 +19,17 @@ class ContactFieldRetry:
     def set_field_retry_handler(self, handler: FieldRetryHandler) -> None:
         self._field_retry_handler = handler
 
-    def _validate_contact_field(self, value: str, field: Literal["phone", "email"]) -> str:
+    def _validate_contact_field(
+        self, value: str, field: Literal["phone", "email"]
+    ) -> str:
         retry = self._field_retry_handler
         if retry is None:
             return value
 
         validator = Phone if field == "phone" else Email
-        error_type = InvalidPhoneFormatError if field == "phone" else ValueError
+        error_type = (
+            InvalidPhoneFormatError if field == "phone" else ValueError
+        )
         while True:
             try:
                 validator(value)

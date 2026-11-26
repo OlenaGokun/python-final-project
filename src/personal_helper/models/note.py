@@ -25,11 +25,15 @@ class Note:
     def update_text(self, text: str) -> None:
         self.update(text=text)
 
-    def update(self, text: str | None = None, tags: set[str] | None = None) -> None:
+    def update(
+        self, text: str | None = None, tags: set[str] | None = None
+    ) -> None:
         if text is None and tags is None:
             raise InvalidNoteError("Provide text or tags to update.")
         new_text = Text(text) if text is not None else self._text
-        new_tags = {Tag(tag) for tag in tags} if tags is not None else self._tags
+        new_tags = (
+            {Tag(tag) for tag in tags} if tags is not None else self._tags
+        )
         self._text = new_text
         self._tags = new_tags
 
@@ -46,14 +50,26 @@ class Note:
         missing = requested - self._tags
         if missing:
             names = ", ".join(sorted(tag.value for tag in missing))
-            raise InvalidNoteError(f"Tags not found on note '{self.title}': {names}.")
+            raise InvalidNoteError(
+                f"Tags not found on note '{self.title}': {names}."
+            )
         self._tags.difference_update(requested)
 
     def __str__(self) -> str:
         tags = ", ".join(sorted(tag.value for tag in self.tags))
-        return f"Note title: {self.title.value}, text: {self.text.value}, tags: {tags}"
+        return (
+            f"Note title: {self.title.value}, text: {self.text.value}, "
+            f"tags: {tags}"
+        )
 
     def __repr__(self) -> str:
         tags = sorted(tag.value for tag in self.tags)
-        tags_repr = "{" + ", ".join(repr(tag) for tag in tags) + "}" if tags else "set()"
-        return f"Note({self.title.value!r}, {self.text.value!r}, tags={tags_repr})"
+        tags_repr = (
+            "{" + ", ".join(repr(tag) for tag in tags) + "}"
+            if tags
+            else "set()"
+        )
+        return (
+            f"Note({self.title.value!r}, {self.text.value!r}, "
+            f"tags={tags_repr})"
+        )

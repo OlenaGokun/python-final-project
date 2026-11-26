@@ -1,7 +1,11 @@
 import pytest
 from collections import UserDict
 
-from personal_helper.core import InvalidNoteError, NoteAlreadyExistsError, NoteNotFoundError
+from personal_helper.core import (
+    InvalidNoteError,
+    NoteAlreadyExistsError,
+    NoteNotFoundError,
+)
 from personal_helper.models.fields import Tag, Text, Title
 from personal_helper.models.note import Note
 from personal_helper.models.notes import Notebook
@@ -9,9 +13,13 @@ from personal_helper.models.notes import Notebook
 
 def test_note_string_representations_include_sorted_tags():
     note = Note("Shopping", "Buy milk", {"Home", "FOOD"})
-    assert str(note) == "Note title: Shopping, text: Buy milk, tags: food, home"
+    assert (
+        str(note) == "Note title: Shopping, text: Buy milk, tags: food, home"
+    )
     assert repr(note) == "Note('Shopping', 'Buy milk', tags={'food', 'home'})"
-    assert str(Note("Plain", "Text")) == "Note title: Plain, text: Text, tags: "
+    assert (
+        str(Note("Plain", "Text")) == "Note title: Plain, text: Text, tags: "
+    )
     assert repr(Note("Plain", "Text")) == "Note('Plain', 'Text', tags=set())"
 
 
@@ -96,6 +104,7 @@ def test_multiword_titles_are_trimmed_and_case_insensitive():
     assert notes["GROCERY LIST"].text.value == "Buy bread"
     notes.delete("grocery list")
     assert len(notes) == 0
+
 
 def test_title_is_immutable_and_lookup_uses_normalized_key():
     notes = Notebook()
@@ -202,11 +211,20 @@ def test_search_notes_combines_fields_and_matches_any_tag():
 
     assert notes.search() == ()
     assert [n.title.value for n in notes.search(title="STRASSE")] == ["Straße"]
-    assert [n.title.value for n in notes.search(text="MILK AND")] == ["Straße", "recipe"]
-    assert [n.title.value for n in notes.search(tags={"TRAVEL", "home"})] == ["Straße", "street"]
-    assert [n.title.value for n in notes.search(
-        title="STRASSE", text="milk", tags={"missing", "FOOD"}
-    )] == ["Straße"]
+    assert [n.title.value for n in notes.search(text="MILK AND")] == [
+        "Straße",
+        "recipe",
+    ]
+    assert [n.title.value for n in notes.search(tags={"TRAVEL", "home"})] == [
+        "Straße",
+        "street",
+    ]
+    assert [
+        n.title.value
+        for n in notes.search(
+            title="STRASSE", text="milk", tags={"missing", "FOOD"}
+        )
+    ] == ["Straße"]
     assert notes.search(title="street", text="milk", tags={"food"}) == ()
 
 
@@ -219,9 +237,9 @@ def test_search_query_matches_any_field_and_takes_precedence():
         "Shopping",
         "Plans",
     ]
-    assert [note.title.value for note in notes.search(
-        "grocer", title="missing"
-    )] == ["Shopping", "Plans"]
+    assert [
+        note.title.value for note in notes.search("grocer", title="missing")
+    ] == ["Shopping", "Plans"]
 
 
 @pytest.mark.parametrize(
@@ -241,12 +259,12 @@ def test_tags_match_any():
     notes.add_tags("Shopping", {"Personal", "GROCERIES", "personal"})
     notes.add_tags("trip", {"travel", "personal"})
 
-    assert [note.title.value for note in notes.search(tags={"groceries", "TRAVEL"})] == [
-        "shopping", "trip"
-    ]
-    assert [note.title.value for note in notes.search(tags={"personal", "travel"})] == [
-        "shopping", "trip"
-    ]
+    assert [
+        note.title.value for note in notes.search(tags={"groceries", "TRAVEL"})
+    ] == ["shopping", "trip"]
+    assert [
+        note.title.value for note in notes.search(tags={"personal", "travel"})
+    ] == ["shopping", "trip"]
     assert notes.search(tags={"unknown"}) == ()
 
 
@@ -275,7 +293,9 @@ def test_note_text_is_validated_on_update():
     assert note.text.value == "Buy bread"
 
 
-@pytest.mark.parametrize("tags", [set(), {""}, {"two words"}, {"good", "bad tag"}])
+@pytest.mark.parametrize(
+    "tags", [set(), {""}, {"two words"}, {"good", "bad tag"}]
+)
 def test_invalid_tags_are_rejected_without_partial_mutation(tags):
     notes = Notebook()
     notes.add("shopping", "Buy milk")

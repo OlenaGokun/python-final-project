@@ -15,7 +15,9 @@ class RenameContactCommand(AddressBookCommand):
         return "rename-contact --name <current name> --new-name <new name>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name", "--new-name"}
         options = parse_options(args, required, required, self.get_usage())
         name = " ".join(options["--name"])
@@ -24,4 +26,7 @@ class RenameContactCommand(AddressBookCommand):
         replacement = address_book.rename(name, new_name)
         if replacement is original:
             return f"Contact '{original.name.value}' unchanged."
-        return f"✅ Contact '{original.name.value}' renamed to '{replacement.name.value}'."
+        return (
+            f"✅ Contact '{original.name.value}' renamed to "
+            f"'{replacement.name.value}'."
+        )

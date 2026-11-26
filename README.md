@@ -48,7 +48,7 @@ python src
 
 ### Run Tests
 
-For development, install the project with its test dependencies:
+For development, install the project with its test and lint dependencies:
 
 ```bash
 python -m pip install -e ".[dev]"
@@ -57,6 +57,12 @@ python -m pip install -e ".[dev]"
 ```bash
 # Run all tests
 python -m pytest
+```
+
+Check Python code with Ruff:
+
+```bash
+python -m ruff check .
 ```
 
 For coverage, install the separate `coverage` package and run:
@@ -80,6 +86,8 @@ python -m coverage html
 - `help --command <command>` — Show details for a specific command
 - `hello` — Get a greeting from the bot
 - `add-contact --name <name> [--phone <phone> ...] [--email <email>] [--address <address>] [--birthday <DD.MM.YYYY>]` — Add a contact or update its details
+- `rename-contact --name <current name> --new-name <new name>` — Rename a contact
+- `delete-contact --name <contact name>` — Delete a contact after confirmation
 - `add-phone --name <name> --phone <phone> [--alias <alias>]` — Add a phone, or create the contact and add its first phone
 - `change-phone --name <name> --old-phone <phone-or-alias> --new-phone <phone>` — Change a phone number
 - `delete-phone --name <name> --phone <phone-or-alias>` — Remove a specific phone number
@@ -121,6 +129,9 @@ Likewise, `show-all-notes` displays compact lines, while `search-notes` shows
 the title, text, and tags in an indented view. A note without tags shows `—`
 in the detailed view.
 Error messages are red in a terminal; redirected output contains no color codes.
+For unknown command names of at least three characters, the application may
+suggest registered commands that contain the entered text or differ by a single
+insertion, deletion, substitution, or swap of adjacent characters.
 
 ```text
 add-phone --name Jane --phone 5550009999

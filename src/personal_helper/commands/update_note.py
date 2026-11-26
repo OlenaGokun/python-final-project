@@ -19,10 +19,16 @@ class UpdateNoteCommand(NotebookCommand):
 
     @input_error
     def run_with_notebook(self, args: list, notebook: Notebook) -> str:
-        options = parse_options(args, {"--title", "--text", "--tags"}, {"--title"}, self.get_usage())
+        options = parse_options(
+            args,
+            {"--title", "--text", "--tags"},
+            {"--title"},
+            self.get_usage(),
+        )
         if "--text" not in options and "--tags" not in options:
             raise InvalidInputError(
-                f"Invalid arguments. Provide --text or --tags.\nUsage: {self.get_usage()}"
+                "Invalid arguments. Provide --text or --tags.\n"
+                f"Usage: {self.get_usage()}"
             )
         title = " ".join(options["--title"])
         notebook.update_note(

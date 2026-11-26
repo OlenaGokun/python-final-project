@@ -4,21 +4,26 @@ from .exceptions import InvalidInputError
 def parse_input(user_input):
     parts = user_input.split()
     if not parts:
-        return "",
+        return ("",)
     cmd, *args = parts
     cmd = cmd.strip().lower()
     return cmd, *args
 
 
 def parse_options(
-    args: list[str], allowed: set[str], required: set[str], usage: str,
+    args: list[str],
+    allowed: set[str],
+    required: set[str],
+    usage: str,
     single: set[str] | None = None,
 ) -> dict[str, list[str]]:
     options: dict[str, list[str]] = {}
     current: str | None = None
 
     def invalid(message: str) -> InvalidInputError:
-        return InvalidInputError(f"Invalid arguments. {message}\nUsage: {usage}")
+        return InvalidInputError(
+            f"Invalid arguments. {message}\nUsage: {usage}"
+        )
 
     for word in args:
         if word.startswith("--"):
@@ -39,5 +44,7 @@ def parse_options(
             raise invalid(f"Option {name} requires exactly one value.")
     missing = required - options.keys()
     if missing:
-        raise invalid(f"Missing required options: {', '.join(sorted(missing))}.")
+        raise invalid(
+            f"Missing required options: {', '.join(sorted(missing))}."
+        )
     return options

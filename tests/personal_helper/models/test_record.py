@@ -11,6 +11,7 @@ from personal_helper.core import (
     PhoneNotFoundError,
 )
 
+
 class TestRecordCreation(unittest.TestCase):
     def test_name_is_stored_as_a_name_object(self):
         record = Record("John")
@@ -35,6 +36,7 @@ class TestRecordCreation(unittest.TestCase):
     def test_invalid_name_is_rejected(self):
         with self.assertRaises(InvalidNameError):
             Record("")
+
 
 class TestAddPhone(unittest.TestCase):
     def setUp(self):
@@ -92,6 +94,7 @@ class TestFindPhone(unittest.TestCase):
         phone = self.record.add_phone("1112223333", "Work")
         self.assertIs(self.record.find_phone("work"), phone)
 
+
 class TestRemovePhone(unittest.TestCase):
     def setUp(self):
         self.record = Record("John")
@@ -106,6 +109,7 @@ class TestRemovePhone(unittest.TestCase):
         with self.assertRaises(PhoneNotFoundError):
             self.record.remove_phone("0000000000")
         self.assertEqual(len(self.record.phones), 2)
+
 
 class TestEditPhone(unittest.TestCase):
     def setUp(self):
@@ -134,6 +138,7 @@ class TestEditPhone(unittest.TestCase):
         self.assertEqual(
             [p.value for p in self.record.phones], ["1234567890", "5555555555"]
         )
+
 
 class TestUpdateDetails(unittest.TestCase):
     def setUp(self):
@@ -179,6 +184,7 @@ class TestUpdateDetails(unittest.TestCase):
         )
         self.assertIsNone(self.record.email)
 
+
 class TestRemoveOptionalDetails(unittest.TestCase):
     def test_removing_unset_birthday_or_email_raises(self):
         record = Record("John")
@@ -191,6 +197,7 @@ class TestRemoveOptionalDetails(unittest.TestCase):
                     method()
                 self.assertEqual(str(error.exception), message)
 
+
 class TestRecordStr(unittest.TestCase):
     def test_matches_the_expected_format(self):
         record = Record("John")
@@ -202,6 +209,7 @@ class TestRecordStr(unittest.TestCase):
 
     def test_record_without_phones(self):
         self.assertEqual(str(Record("John")), "Contact name: John, phones: ")
+
 
 if __name__ == "__main__":
     unittest.main()

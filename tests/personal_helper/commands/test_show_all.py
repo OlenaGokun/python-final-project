@@ -1,18 +1,15 @@
 """Unit tests for address book commands"""
 
-import pytest
 from colorama import Fore, Style
 
 from personal_helper.core import formatting
 from personal_helper.models import PersonalHelper
-from personal_helper.models.book import AddressBook
 from personal_helper.models.record import Record
-from personal_helper.command_registry import CommandRegistry
-from personal_helper.core.exceptions import InvalidInputError, CommandError
 
 # ============================================================================
 # ADD COMMAND TESTS
 # ============================================================================
+
 
 class TestShowAllContactsCommand:
     """Tests for show-all-contacts command"""
@@ -87,9 +84,9 @@ def test_show_all_notes_lists_note_titles_and_text(registry, data):
     result = registry.get_command("show-all-notes").run([], data)
 
     assert result == (
-        "Shopping: Buy milk [tags: food, home]\n"
-        "Plans: Call tomorrow"
+        "Shopping: Buy milk [tags: food, home]\nPlans: Call tomorrow"
     )
+
 
 # ============================================================================
 # SHOW BIRTHDAYS COMMAND TESTS

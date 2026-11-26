@@ -11,7 +11,13 @@ from personal_helper.core.formatting import colored
 from personal_helper.models.personal_helper import PersonalHelper
 
 if TYPE_CHECKING:
-    from personal_helper.models import AddressBook, Note, Notebook, Phone, Record
+    from personal_helper.models import (
+        AddressBook,
+        Note,
+        Notebook,
+        Phone,
+        Record,
+    )
 
 
 @dataclass(frozen=True)
@@ -34,7 +40,7 @@ class CommandLookup(Protocol):
 
 class BaseCommand(ABC):
     """Base class for all commands.
-    
+
     To create a new command, inherit from this class and implement the
     abstract methods. CommandRegistry will automatically discover and
     register any class that inherits from BaseCommand.
@@ -52,7 +58,7 @@ class BaseCommand(ABC):
 
     @abstractmethod
     def get_usage(self) -> str:
-        """Return usage example (e.g., 'add-contact --name <name> [--phone <phone>]')"""
+        """Return a usage example for the command."""
         pass
 
     def set_registry(self, registry: CommandLookup) -> None:
@@ -91,7 +97,8 @@ class AddressBookCommand(BaseCommand):
         )
         for label, value in fields:
             lines.append(
-                f"    {colored(label, Fore.BLUE)}{' ' * (10 - len(label))}{value}"
+                f"    {colored(label, Fore.BLUE)}"
+                f"{' ' * (10 - len(label))}{value}"
             )
         return "\n".join(lines)
 
@@ -101,13 +108,19 @@ class AddressBookCommand(BaseCommand):
         lines = []
         for record in records:
             name = colored(f"{record.name.value}:", TITLE_COLOR)
-            phones = ", ".join(
-                AddressBookCommand._format_phone(phone) for phone in record.phones
-            ) or "—"
+            phones = (
+                ", ".join(
+                    AddressBookCommand._format_phone(phone)
+                    for phone in record.phones
+                )
+                or "—"
+            )
             email = str(record.email) if record.email else "—"
             address = str(record.address) if record.address else "—"
             birthday = str(record.birthday) if record.birthday else "—"
-            lines.append(f"{name} 📞 {phones}; ✉️ {email}; 🏠 {address}; 🎂 {birthday}")
+            lines.append(
+                f"{name} 📞 {phones}; ✉️ {email}; 🏠 {address}; 🎂 {birthday}"
+            )
         return "\n".join(lines)
 
     @final
@@ -115,7 +128,9 @@ class AddressBookCommand(BaseCommand):
         return self.run_with_address_book(args, data.address_book)
 
     @abstractmethod
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> CommandResult:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> CommandResult:
         """Execute the command with the address book."""
 
 
@@ -134,12 +149,16 @@ class NotebookCommand(BaseCommand):
         text_label = colored("text:", Fore.BLUE)
         tags_label = colored("tags:", Fore.BLUE)
         tags = ", ".join(sorted(tag.value for tag in note.tags)) or "—"
-        return f"{title}\n    {text_label} {note.text}\n    {tags_label} {tags}"
+        return (
+            f"{title}\n    {text_label} {note.text}\n    {tags_label} {tags}"
+        )
 
     @final
     def run(self, args: list, data: PersonalHelper) -> CommandResult:
         return self.run_with_notebook(args, data.notebook)
 
     @abstractmethod
-    def run_with_notebook(self, args: list, notebook: Notebook) -> CommandResult:
+    def run_with_notebook(
+        self, args: list, notebook: Notebook
+    ) -> CommandResult:
         """Execute the command with the notebook."""

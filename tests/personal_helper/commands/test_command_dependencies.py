@@ -65,7 +65,9 @@ def test_specialized_base_classes_are_abstract(base):
         base()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 11), reason="final metadata requires Python 3.11")
+@pytest.mark.skipif(
+    sys.version_info < (3, 11), reason="final metadata requires Python 3.11"
+)
 @pytest.mark.parametrize("base", [AddressBookCommand, NotebookCommand])
 def test_specialized_run_is_marked_final(base):
     assert base.run.__final__ is True
@@ -104,14 +106,22 @@ def test_registry_discovers_specialized_and_general_commands(registry):
 
 def test_notes_by_tag_command_is_not_registered(registry):
     assert registry.get_command("notes-by-tag") is None
-    assert all(command.get_command_name() != "notes-by-tag" for command in registry.get_all_commands())
+    assert all(
+        command.get_command_name() != "notes-by-tag"
+        for command in registry.get_all_commands()
+    )
 
 
 def test_find_tags_command_is_not_registered(registry):
     assert registry.get_command("find-tags") is None
-    assert all(command.get_command_name() != "find-tags" for command in registry.get_all_commands())
+    assert all(
+        command.get_command_name() != "find-tags"
+        for command in registry.get_all_commands()
+    )
 
 
-@pytest.mark.parametrize("name", ["add-tags", "remove-tags", "remove-note-tags"])
+@pytest.mark.parametrize(
+    "name", ["add-tags", "remove-tags", "remove-note-tags"]
+)
 def test_old_tag_command_names_are_not_registered(registry, name):
     assert registry.get_command(name) is None

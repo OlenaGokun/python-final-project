@@ -1,8 +1,9 @@
 import unittest
-from datetime import date, timedelta
+from datetime import date
 from personal_helper.models.book import AddressBook
 from personal_helper.models.record import Record
 from personal_helper.core import DuplicateContactError
+
 
 class TestGetUpcomingBirthdays(unittest.TestCase):
     def setUp(self):
@@ -30,14 +31,18 @@ class TestGetUpcomingBirthdays(unittest.TestCase):
 
     def test_returns_dict_with_name_and_date(self):
         today = date.today()
-        year = today.year if today.month == 3 and today.day <= 15 else today.year + 1
+        year = (
+            today.year
+            if today.month == 3 and today.day <= 15
+            else today.year + 1
+        )
         birthday_date = f"15.03.{year - 30}"
-        
+
         record = Record("John")
         record.add_phone("1234567890")
         record.add_birthday(birthday_date)
         self.book.add_record(record)
-        
+
         result = self.book.get_upcoming_birthdays()
         if result:
             self.assertIsInstance(result[0], dict)
@@ -48,18 +53,19 @@ class TestGetUpcomingBirthdays(unittest.TestCase):
     def test_weekend_birthday_moves_to_monday(self):
         """Test that Saturday/Sunday birthdays move to the following Monday"""
         book = AddressBook()
-        
+
         # Create a contact with a birthday that will fall on weekend
         record = Record("Weekend Person")
         record.add_phone("1234567890")
-        # This is just testing the logic, actual weekend dates depend on the year
+        # Actual weekend dates depend on the year.
         record.add_birthday("15.03.1990")
         book.add_record(record)
-        
+
         result = book.get_upcoming_birthdays()
         # If there's an upcoming birthday, verify structure
         if result:
             self.assertIn("congratulation_date", result[0])
+
 
 class TestBirthdayInYear(unittest.TestCase):
     def test_normal_date(self):
@@ -76,6 +82,7 @@ class TestBirthdayInYear(unittest.TestCase):
         birthday = date(2000, 2, 29)
         result = AddressBook._birthday_in_year(birthday, 2001)
         self.assertEqual(result, date(2001, 2, 28))
+
 
 class TestNextBirthday(unittest.TestCase):
     def test_future_birthday_this_year(self):
@@ -102,16 +109,17 @@ class TestNextBirthday(unittest.TestCase):
         result = AddressBook._next_birthday(birthday, today)
         self.assertEqual(result, today)
 
+
 class TestAddRecordDuplicate(unittest.TestCase):
     def test_duplicate_name_raises_error(self):
         book = AddressBook()
         record1 = Record("John")
         record1.add_phone("1234567890")
         book.add_record(record1)
-        
+
         record2 = Record("John")
         record2.add_phone("9999999999")
-        
+
         with self.assertRaises(DuplicateContactError) as context:
             book.add_record(record2)
         self.assertIn("already exists", str(context.exception))
@@ -121,12 +129,13 @@ class TestAddRecordDuplicate(unittest.TestCase):
         record1 = Record("John")
         record1.add_phone("1234567890")
         book.add_record(record1)
-        
+
         record2 = Record("Jane")
         record2.add_phone("9999999999")
         book.add_record(record2)
-        
+
         self.assertEqual(len(book), 2)
+
 
 class TestRecordWithBirthday(unittest.TestCase):
     def test_str_includes_birthday(self):
@@ -157,6 +166,7 @@ class TestRecordWithBirthday(unittest.TestCase):
         record.add_phone("1234567890")
         result = repr(record)
         self.assertNotIn("birthday", result)
+
 
 if __name__ == "__main__":
     unittest.main()

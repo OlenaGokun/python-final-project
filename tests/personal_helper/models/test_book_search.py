@@ -32,7 +32,9 @@ def book_with_search_contacts(book):
         ("first street", "John"),
     ],
 )
-def test_search_matches_contact_fields(book_with_search_contacts, query, expected_name):
+def test_search_matches_contact_fields(
+    book_with_search_contacts, query, expected_name
+):
     matches = book_with_search_contacts.search(query)
 
     assert [record.name.value for record in matches] == [expected_name]
@@ -45,7 +47,9 @@ def test_search_returns_multiple_contacts(book_with_search_contacts):
 
 
 @pytest.mark.parametrize("query", ["", "   ", None])
-def test_search_returns_no_matches_for_empty_query(book_with_search_contacts, query):
+def test_search_returns_no_matches_for_empty_query(
+    book_with_search_contacts, query
+):
     assert book_with_search_contacts.search(query) == []
 
 

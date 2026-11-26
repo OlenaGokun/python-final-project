@@ -1,8 +1,13 @@
 """Tests for field classes (Name, Phone, Birthday)"""
 
 import unittest
-from personal_helper.models.fields import Field, Name, Phone, Birthday, Tag, Text, Title
-from personal_helper.core import InvalidInputError, InvalidNameError, InvalidPhoneFormatError, InvalidBirthdayFormatError, InvalidNoteError
+from personal_helper.models.fields import Field, Name, Phone, Tag, Text, Title
+from personal_helper.core import (
+    InvalidInputError,
+    InvalidNameError,
+    InvalidPhoneFormatError,
+    InvalidNoteError,
+)
 
 
 class TestField(unittest.TestCase):
@@ -97,7 +102,10 @@ class TestPhone(unittest.TestCase):
 
     def test_invalid_alias_is_rejected(self):
         for alias in ("", "two words", 123):
-            with self.subTest(alias=alias), self.assertRaises(InvalidInputError):
+            with (
+                self.subTest(alias=alias),
+                self.assertRaises(InvalidInputError),
+            ):
                 Phone("1234567890", alias)
 
     def test_error_message_mentions_the_value(self):
@@ -127,13 +135,19 @@ class TestNoteFields(unittest.TestCase):
 
     def test_text_rejects_empty_or_non_string_values(self):
         for value in ("", "  ", None, 123):
-            with self.subTest(value=value), self.assertRaises(InvalidNoteError):
+            with (
+                self.subTest(value=value),
+                self.assertRaises(InvalidNoteError),
+            ):
                 Text(value)
 
     def test_title_and_tag_reject_invalid_values(self):
         for cls in (Title, Tag):
             for value in ("", " ", None):
-                with self.subTest(cls=cls, value=value), self.assertRaises(InvalidNoteError):
+                with (
+                    self.subTest(cls=cls, value=value),
+                    self.assertRaises(InvalidNoteError),
+                ):
                     cls(value)
         with self.assertRaises(InvalidNoteError):
             Tag("two words")

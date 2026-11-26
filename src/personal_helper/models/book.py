@@ -1,55 +1,64 @@
 from collections import UserDict
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 import calendar
 from personal_helper.core import ContactNotFoundError, DuplicateContactError
 
 DEFAULT_BIRTHDAY_WINDOW_DAYS = 7
 
-class AddressBook(UserDict):
 
+class AddressBook(UserDict):
     @staticmethod
     def _birthday_in_year(birthday, year):
         """Feb 29 birthdays fall back to Feb 28 in non-leap years."""
-        if birthday.month == 2 and birthday.day == 29 and not calendar.isleap(year):
+        if (
+            birthday.month == 2
+            and birthday.day == 29
+            and not calendar.isleap(year)
+        ):
             return birthday.replace(year=year, day=28)
         return birthday.replace(year=year)
 
-    
     @staticmethod
     def _next_birthday(birthday, today):
         occurrence = AddressBook._birthday_in_year(birthday, today.year)
         if occurrence < today:
-            # Re-derive from birthday: bumping occurrence would carry a Feb 28 fallback
-            # into a leap year, or crash on a Feb 29 occurrence.
-            occurrence = AddressBook._birthday_in_year(birthday, today.year + 1)
+            # Re-derive from birthday to avoid carrying a Feb 28 fallback
+            # into a leap year or crashing on a Feb 29 occurrence.
+            occurrence = AddressBook._birthday_in_year(
+                birthday, today.year + 1
+            )
         return occurrence
 
-
     def get_upcoming_birthdays(self, days: int = DEFAULT_BIRTHDAY_WINDOW_DAYS):
-        """Return upcoming birthdays from today through the given number of days."""
+        """Return upcoming birthdays within the given number of days."""
         users_to_congratulate = []
         today = date.today()
-        
+
         for record in self.data.values():
-            if not hasattr(record, 'birthday') or record.birthday is None:
+            if not hasattr(record, "birthday") or record.birthday is None:
                 continue
-            
+
             birthday = record.birthday.value
             next_birthday = self._next_birthday(birthday, today)
-            
+
             number_of_days_until_birthday = (next_birthday - today).days
             if number_of_days_until_birthday <= days:
                 congratulation_date = next_birthday
                 if congratulation_date.weekday() >= 5:
-                    congratulation_date += timedelta(days=7 - congratulation_date.weekday())
-                
-                users_to_congratulate.append({
-                    "name": record.name.value,
-                    "congratulation_date": congratulation_date.strftime("%d.%m.%Y")
-                })
-        
-        return users_to_congratulate
+                    congratulation_date += timedelta(
+                        days=7 - congratulation_date.weekday()
+                    )
 
+                users_to_congratulate.append(
+                    {
+                        "name": record.name.value,
+                        "congratulation_date": congratulation_date.strftime(
+                            "%d.%m.%Y"
+                        ),
+                    }
+                )
+
+        return users_to_congratulate
 
     @staticmethod
     def _key(name):
@@ -77,7 +86,9 @@ class AddressBook(UserDict):
     def add_record(self, record):
         if record.name.key in self.data:
             existing = self.data[record.name.key]
-            raise DuplicateContactError(f"Contact '{existing.name.value}' already exists.")
+            raise DuplicateContactError(
+                f"Contact '{existing.name.value}' already exists."
+            )
         self.data[record.name.key] = record
         return record
 
@@ -97,7 +108,9 @@ class AddressBook(UserDict):
         new_key = replacement.name.key
         if new_key != old_key and new_key in self.data:
             existing = self.data[new_key]
-            raise DuplicateContactError(f"Contact '{existing.name.value}' already exists.")
+            raise DuplicateContactError(
+                f"Contact '{existing.name.value}' already exists."
+            )
 
         del self.data[old_key]
         try:

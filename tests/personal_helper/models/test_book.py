@@ -5,7 +5,12 @@ from collections import UserDict
 import pytest
 from personal_helper.models.book import AddressBook
 from personal_helper.models.record import Record
-from personal_helper.core import ContactNotFoundError, DuplicateContactError, InvalidNameError
+from personal_helper.core import (
+    ContactNotFoundError,
+    DuplicateContactError,
+    InvalidNameError,
+)
+
 
 class AddressBookTestCase(unittest.TestCase):
     def setUp(self):
@@ -13,6 +18,7 @@ class AddressBookTestCase(unittest.TestCase):
         self.john = Record("John")
         self.john.add_phone("1234567890")
         self.book.add_record(self.john)
+
 
 class TestAddRecord(AddressBookTestCase):
     def test_is_a_userdict(self):
@@ -37,6 +43,7 @@ class TestAddRecord(AddressBookTestCase):
         with self.assertRaises(DuplicateContactError):
             self.book.add_record(Record("JOHN"))
         self.assertIs(self.book.find("john"), self.john)
+
 
 class TestFind(AddressBookTestCase):
     def test_returns_the_record(self):
@@ -65,6 +72,7 @@ class TestFind(AddressBookTestCase):
         self.assertIs(self.book["jane"], jane)
         self.assertIn("Jane", self.book)
 
+
 class TestDelete(AddressBookTestCase):
     def test_removes_the_record(self):
         self.book.delete("John")
@@ -88,6 +96,7 @@ class TestDelete(AddressBookTestCase):
         self.assertNotIn("John", self.book)
         self.assertEqual(len(self.book), 0)
 
+
 class TestAddressBookStr(unittest.TestCase):
     def test_empty_book(self):
         self.assertEqual(str(AddressBook()), "Address book is empty.")
@@ -98,6 +107,7 @@ class TestAddressBookStr(unittest.TestCase):
         jane.add_phone("9876543210")
         book.add_record(jane)
         self.assertEqual(str(book), "Contact name: Jane, phones: 9876543210")
+
 
 if __name__ == "__main__":
     unittest.main()
@@ -114,7 +124,9 @@ def test_rename_rekeys_contact_and_preserves_details(book):
     assert renamed is not original
     assert book.find("Mary Jane") is None
     assert (renamed.phones, renamed.email, renamed.birthday) == (
-        original.phones, original.email, original.birthday
+        original.phones,
+        original.email,
+        original.birthday,
     )
     assert book.rename("Mary Doe", " Mary Doe ") is renamed
     assert book.rename("Mary Doe", "MARY DOE").name.value == "MARY DOE"

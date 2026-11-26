@@ -35,7 +35,9 @@ class Field:
 class Name(Field):
     def __init__(self, value):
         if not isinstance(value, str) or not value.strip():
-            raise InvalidNameError("Name is required and must be a non-empty string.")
+            raise InvalidNameError(
+                "Name is required and must be a non-empty string."
+            )
         super().__init__(value.strip())
 
     @property
@@ -64,8 +66,10 @@ class Text(Field):
 
 class Tag(Field):
     def __init__(self, value):
-        if not isinstance(value, str) or not value or any(
-            character.isspace() for character in value
+        if (
+            not isinstance(value, str)
+            or not value
+            or any(character.isspace() for character in value)
         ):
             raise InvalidNoteError("Tags must be single non-empty words.")
         super().__init__(value.casefold())
@@ -90,6 +94,7 @@ def has_valid_plus_and_parens(cleaned: str) -> bool:
                 return False
     return depth == 0
 
+
 def normalize_phone(phone_number, length=10):
     if not isinstance(phone_number, str):
         raise InvalidPhoneFormatError(
@@ -104,9 +109,10 @@ def normalize_phone(phone_number, length=10):
 
     if not has_valid_plus_and_parens(cleaned):
         raise InvalidPhoneFormatError(
-            f"Invalid '+' placement or parentheses in phone number: {phone_number!r}."
+            "Invalid '+' placement or parentheses in phone number: "
+            f"{phone_number!r}."
         )
-    
+
     digits = "".join(ch for ch in cleaned if "0" <= ch <= "9")
 
     if len(digits) == length:
@@ -129,10 +135,13 @@ class Phone(Field):
     def __init__(self, value, alias: str | None = None):
         normalized_value = normalize_phone(value, length=self.LENGTH)
         if alias is not None and (
-            not isinstance(alias, str) or not alias
+            not isinstance(alias, str)
+            or not alias
             or any(character.isspace() for character in alias)
         ):
-            raise InvalidInputError("Phone alias must be a single non-empty word.")
+            raise InvalidInputError(
+                "Phone alias must be a single non-empty word."
+            )
         super().__init__(normalized_value)
         self._alias = alias
 
@@ -147,7 +156,11 @@ class Phone(Field):
         return alias.casefold() if alias is not None else None
 
     def __str__(self) -> str:
-        return f"{self.alias}: {self.value}" if self.alias is not None else self.value
+        return (
+            f"{self.alias}: {self.value}"
+            if self.alias is not None
+            else self.value
+        )
 
 
 class Birthday(Field):
@@ -155,7 +168,9 @@ class Birthday(Field):
         try:
             date_obj = datetime.strptime(value, "%d.%m.%Y").date()
         except (ValueError, TypeError):
-            raise InvalidBirthdayFormatError("Invalid date format. Use DD.MM.YYYY")
+            raise InvalidBirthdayFormatError(
+                "Invalid date format. Use DD.MM.YYYY"
+            )
         super().__init__(date_obj)
 
     @property
@@ -165,7 +180,8 @@ class Birthday(Field):
     def __str__(self):
         # Same format the user types it in.
         return self.value.strftime("%d.%m.%Y")
-    
+
+
 class Email(Field):
     EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 

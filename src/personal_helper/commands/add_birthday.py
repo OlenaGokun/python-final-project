@@ -17,9 +17,13 @@ class AddBirthdayCommand(AddressBookCommand):
         return "add-birthday --name <name> --birthday <DD.MM.YYYY>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name", "--birthday"}
-        options = parse_options(args, required, required, self.get_usage(), {"--birthday"})
+        options = parse_options(
+            args, required, required, self.get_usage(), {"--birthday"}
+        )
         name, birthday = " ".join(options["--name"]), options["--birthday"][0]
         record = address_book[name]
         record.add_birthday(birthday)

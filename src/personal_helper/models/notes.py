@@ -1,6 +1,10 @@
 from collections import UserDict
 
-from personal_helper.core import InvalidNoteError, NoteAlreadyExistsError, NoteNotFoundError
+from personal_helper.core import (
+    InvalidNoteError,
+    NoteAlreadyExistsError,
+    NoteNotFoundError,
+)
 from .fields import Tag, Text, Title
 from .note import Note
 
@@ -59,9 +63,15 @@ class Notebook(UserDict):
         text: str | None = None,
         tags: set[str] | None = None,
     ) -> tuple[Note, ...]:
-        title_query = Text(title).value.casefold() if title is not None else None
+        title_query = (
+            Text(title).value.casefold() if title is not None else None
+        )
         text_query = Text(text).value.casefold() if text is not None else None
-        query_value = query.strip().casefold() if isinstance(query, str) and query.strip() else None
+        query_value = (
+            query.strip().casefold()
+            if isinstance(query, str) and query.strip()
+            else None
+        )
         if tags is not None and not tags:
             raise InvalidNoteError("At least one tag is required.")
         selected = {Tag(tag) for tag in tags} if tags is not None else None
@@ -77,16 +87,23 @@ class Notebook(UserDict):
             return ()
 
         return tuple(
-            note for note in self.data.values()
-            if (query_value is None or any(
-                query_value in value
-                for value in (
-                    note.title.value.casefold(),
-                    note.text.value.casefold(),
-                    *(tag.value for tag in note.tags),
+            note
+            for note in self.data.values()
+            if (
+                query_value is None
+                or any(
+                    query_value in value
+                    for value in (
+                        note.title.value.casefold(),
+                        note.text.value.casefold(),
+                        *(tag.value for tag in note.tags),
+                    )
                 )
-            )) and (title_query is None or title_query in note.title.key)
-            and (text_query is None or text_query in note.text.value.casefold())
+            )
+            and (title_query is None or title_query in note.title.key)
+            and (
+                text_query is None or text_query in note.text.value.casefold()
+            )
             and (selected is None or bool(selected.intersection(note.tags)))
         )
 

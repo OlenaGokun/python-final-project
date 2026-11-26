@@ -16,7 +16,9 @@ def test_address_equality_and_hashability():
 
 @pytest.mark.parametrize("value", ["", "   ", None, 123])
 def test_address_rejects_empty_or_non_string_values(value):
-    with pytest.raises(InvalidInputError, match="Address must be a non-empty string"):
+    with pytest.raises(
+        InvalidInputError, match="Address must be a non-empty string"
+    ):
         Address(value)
 
 

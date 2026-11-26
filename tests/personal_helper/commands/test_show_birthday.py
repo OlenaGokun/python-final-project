@@ -1,15 +1,11 @@
 """Unit tests for address book commands"""
 
-import pytest
 from personal_helper.models import PersonalHelper
-from personal_helper.models.book import AddressBook
-from personal_helper.models.record import Record
-from personal_helper.command_registry import CommandRegistry
-from personal_helper.core.exceptions import InvalidInputError, CommandError
 
 # ============================================================================
 # ADD COMMAND TESTS
 # ============================================================================
+
 
 class TestShowBirthdayCommand:
     """Tests for show-birthday command"""
@@ -17,7 +13,9 @@ class TestShowBirthdayCommand:
     def test_show_birthday(self, registry, book_with_contacts):
         """Test showing birthday"""
         cmd = registry.get_command("show-birthday")
-        result = cmd.run(["--name", "John"], PersonalHelper(book_with_contacts))
+        result = cmd.run(
+            ["--name", "John"], PersonalHelper(book_with_contacts)
+        )
 
         assert "🎂" in result
         assert "25.12.1990" in result
@@ -25,7 +23,9 @@ class TestShowBirthdayCommand:
     def test_show_birthday_not_set(self, registry, book_with_contacts):
         """Test showing birthday when not set"""
         cmd = registry.get_command("show-birthday")
-        result = cmd.run(["--name", "Alice"], PersonalHelper(book_with_contacts))
+        result = cmd.run(
+            ["--name", "Alice"], PersonalHelper(book_with_contacts)
+        )
 
         assert "ℹ️" in result
         assert "has no birthday set" in result
@@ -45,7 +45,7 @@ class TestShowBirthdayCommand:
 
         assert "❌" in result
 
+
 # ============================================================================
 # SHOW ALL COMMAND TESTS
 # ============================================================================
-

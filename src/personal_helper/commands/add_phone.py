@@ -17,10 +17,15 @@ class AddPhoneCommand(ContactFieldRetry, AddressBookCommand):
         return "add-phone --name <name> --phone <phone> [--alias <alias>]"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name", "--phone"}
         options = parse_options(
-            args, required | {"--alias"}, required, self.get_usage(),
+            args,
+            required | {"--alias"},
+            required,
+            self.get_usage(),
             single={"--phone", "--alias"},
         )
         name = " ".join(options["--name"])

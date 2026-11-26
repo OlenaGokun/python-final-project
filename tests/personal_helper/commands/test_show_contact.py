@@ -13,7 +13,9 @@ def test_show_contact_displays_all_details(registry, data, monkeypatch):
     record.add_address("Main st. 5")
     record.add_birthday("21.11.2006")
 
-    result = registry.get_command("show-contact").run(["--name", "jane", "doe"], data)
+    result = registry.get_command("show-contact").run(
+        ["--name", "jane", "doe"], data
+    )
 
     assert result == (
         "Jane Doe\n"
@@ -54,6 +56,8 @@ def test_show_contact_rejects_invalid_arguments(registry, data, args):
 
 
 def test_show_contact_requires_existing_contact(registry, data):
-    result = registry.get_command("show-contact").run(["--name", "Nobody"], data)
+    result = registry.get_command("show-contact").run(
+        ["--name", "Nobody"], data
+    )
 
     assert result == "❌ Contact 'Nobody' not found."

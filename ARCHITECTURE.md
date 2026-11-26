@@ -38,8 +38,9 @@ Utilities and support code:
 ## How It Works
 
 1. At startup, **CommandRegistry** discovers commands and the application loads `PersonalHelper`.
-   If the saved file is missing, invalid, or unsupported, startup reports the
-   failure and continues with empty application data.
+   If the saved file is missing, the application starts with empty data.
+   If saved data is invalid or unsupported, the application reports the error
+   and starts with empty data.
 2. The user enters a command, such as `add-contact --name Mary Jane --phone 0501234567`.
 3. The application splits the input and looks up the command in the registry. Commands use the shared option parser to collect values between named options.
 4. The command receives the shared data; specialized command bases pass the relevant collection to the implementation. The command returns a message or an exit request.

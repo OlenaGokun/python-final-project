@@ -16,14 +16,18 @@ class SearchNotesCommand(NotebookCommand):
 
     def get_usage(self) -> str:
         return (
-            "search-notes (--query <query> | [--title <title>] [--text <text>] "
+            "search-notes (--query <query> | [--title <title>] "
+            "[--text <text>] "
             "[--tags <tag> ...])"
         )
 
     @input_error
     def run_with_notebook(self, args: list, notebook: Notebook) -> str:
         options = parse_options(
-            args, {"--query", "--title", "--text", "--tags"}, set(), self.get_usage()
+            args,
+            {"--query", "--title", "--text", "--tags"},
+            set(),
+            self.get_usage(),
         )
         if not options:
             raise InvalidInputError(
@@ -32,7 +36,8 @@ class SearchNotesCommand(NotebookCommand):
             )
         if "--query" in options and len(options) > 1:
             raise InvalidInputError(
-                f"Invalid arguments. --query cannot be combined with field filters.\n"
+                "Invalid arguments. --query cannot be combined with "
+                "field filters.\n"
                 f"Usage: {self.get_usage()}"
             )
         values = {

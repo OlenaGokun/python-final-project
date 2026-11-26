@@ -6,6 +6,7 @@ from personal_helper.core.data import parse_options
 from personal_helper.core.decorators import input_error
 from personal_helper.core.formatting import error_message
 
+
 class HelpCommand(BaseCommand):
     """Command to show help for all or specific command"""
 
@@ -27,11 +28,15 @@ class HelpCommand(BaseCommand):
     @input_error
     def run(self, args: list, data: PersonalHelper) -> str:
         if self._registry is None:
-            raise RuntimeError("HelpCommand must be registered before it can run")
+            raise RuntimeError(
+                "HelpCommand must be registered before it can run"
+            )
 
         if not args:
             return self._show_all_help(self._registry)
-        options = parse_options(args, {"--command"}, {"--command"}, self.get_usage(), {"--command"})
+        options = parse_options(
+            args, {"--command"}, {"--command"}, self.get_usage(), {"--command"}
+        )
         command_name = options["--command"][0]
         return self._show_command_help(self._registry, command_name)
 
@@ -40,13 +45,18 @@ class HelpCommand(BaseCommand):
         result = ["📚 Available Commands:\n"]
 
         result.append("ℹ️  Commands:")
-        for cmd in sorted(registry.get_all_commands(), key=lambda c: c.get_command_name()):
+        for cmd in sorted(
+            registry.get_all_commands(), key=lambda c: c.get_command_name()
+        ):
             usage = cmd.get_usage()
             desc = cmd.get_description()
             result.append(f"  {usage.ljust(35)} - {desc}")
 
         result.append("")
-        result.append("💡 Tip: Use 'help --command <command>' for detailed help on a specific command")
+        result.append(
+            "💡 Tip: Use 'help --command <command>' for detailed help "
+            "on a specific command"
+        )
 
         return "\n".join(result)
 
@@ -58,7 +68,8 @@ class HelpCommand(BaseCommand):
 
         if not cmd:
             return error_message(
-                f"❌ Unknown command: '{command_name}'. Use 'help' to see all commands."
+                f"❌ Unknown command: '{command_name}'. "
+                "Use 'help' to see all commands."
             )
 
         result = [f"📖 Help for '{cmd.get_command_name()}' command:\n"]

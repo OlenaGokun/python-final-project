@@ -17,7 +17,9 @@ def test_note_displays_use_color_only_in_terminal(registry, data, monkeypatch):
     monkeypatch.setattr(formatting.sys, "stdout", Terminal())
 
     compact = registry.get_command("show-all-notes").run([], data)
-    detailed = registry.get_command("search-notes").run(["--title", "Shopping"], data)
+    detailed = registry.get_command("search-notes").run(
+        ["--title", "Shopping"], data
+    )
 
     assert compact == (
         f"{Fore.BLUE}{Style.BRIGHT}Shopping:{Style.RESET_ALL} "
@@ -33,11 +35,23 @@ def test_note_displays_use_color_only_in_terminal(registry, data, monkeypatch):
 @pytest.mark.parametrize(
     ("command_name", "usage"),
     [
-        ("add-note", "add-note --title <title> --text <text> [--tags <tag> ...]"),
-        ("update-note", "update-note --title <title> [--text <text>] [--tags <tag> ...]"),
+        (
+            "add-note",
+            "add-note --title <title> --text <text> [--tags <tag> ...]",
+        ),
+        (
+            "update-note",
+            "update-note --title <title> [--text <text>] [--tags <tag> ...]",
+        ),
         ("delete-note", "delete-note --title <title>"),
-        ("add-note-tags", "add-note-tags --title <title> --tags <tag> [tag ...]"),
-        ("delete-note-tags", "delete-note-tags --title <title> --tags <tag> [tag ...]"),
+        (
+            "add-note-tags",
+            "add-note-tags --title <title> --tags <tag> [tag ...]",
+        ),
+        (
+            "delete-note-tags",
+            "delete-note-tags --title <title> --tags <tag> [tag ...]",
+        ),
     ],
 )
 def test_note_command_usage_uses_title(registry, command_name, usage):
@@ -45,28 +59,54 @@ def test_note_command_usage_uses_title(registry, command_name, usage):
 
 
 def test_note_workflow_without_contacts(registry, data):
-    assert registry.get_command("add-note").run(
-        ["--title", "Shopping", "--text", "Buy", "milk", "and", "bread"], data
-    ) == "✅ Note 'Shopping' added."
-    assert registry.get_command("search-notes").run(
-        ["--text", "MILK", "AND"], data
-    ) == "Shopping\n    text: Buy milk and bread\n    tags: —"
-    assert registry.get_command("update-note").run(
-        ["--title", "shopping", "--text", "Buy", "coffee"], data
-    ) == "✅ Note 'shopping' updated."
-    assert registry.get_command("search-notes").run(
-        ["--text", "coffee"], data
-    ) == "Shopping\n    text: Buy coffee\n    tags: —"
-    assert registry.get_command("delete-note").run(
-        ["--title", "SHOPPING"], data
-    ) == "✅ Note 'SHOPPING' deleted."
-    assert registry.get_command("search-notes").run(["--text", "coffee"], data) == "ℹ️  No notes found."
+    assert (
+        registry.get_command("add-note").run(
+            ["--title", "Shopping", "--text", "Buy", "milk", "and", "bread"],
+            data,
+        )
+        == "✅ Note 'Shopping' added."
+    )
+    assert (
+        registry.get_command("search-notes").run(
+            ["--text", "MILK", "AND"], data
+        )
+        == "Shopping\n    text: Buy milk and bread\n    tags: —"
+    )
+    assert (
+        registry.get_command("update-note").run(
+            ["--title", "shopping", "--text", "Buy", "coffee"], data
+        )
+        == "✅ Note 'shopping' updated."
+    )
+    assert (
+        registry.get_command("search-notes").run(["--text", "coffee"], data)
+        == "Shopping\n    text: Buy coffee\n    tags: —"
+    )
+    assert (
+        registry.get_command("delete-note").run(["--title", "SHOPPING"], data)
+        == "✅ Note 'SHOPPING' deleted."
+    )
+    assert (
+        registry.get_command("search-notes").run(["--text", "coffee"], data)
+        == "ℹ️  No notes found."
+    )
     assert len(data.address_book) == 0
 
 
 def test_add_note_with_tags(registry, data):
     result = registry.get_command("add-note").run(
-        ["--title", "Shopping", "--text", "Buy", "milk", "--tags", "FOOD", "home", "food"], data
+        [
+            "--title",
+            "Shopping",
+            "--text",
+            "Buy",
+            "milk",
+            "--tags",
+            "FOOD",
+            "home",
+            "food",
+        ],
+        data,
     )
 
     assert result == "✅ Note 'Shopping' added."
@@ -74,11 +114,16 @@ def test_add_note_with_tags(registry, data):
     assert data.notebook["shopping"].tags == {Tag("food"), Tag("home")}
 
 
-@pytest.mark.parametrize("args", [
-    ["--title", "shopping", "--tags", "food"],
-    ["--title", "shopping", "--text", "text", "--tags", ""],
-])
-def test_add_note_with_invalid_text_or_tag_does_not_create_note(registry, data, args):
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["--title", "shopping", "--tags", "food"],
+        ["--title", "shopping", "--text", "text", "--tags", ""],
+    ],
+)
+def test_add_note_with_invalid_text_or_tag_does_not_create_note(
+    registry, data, args
+):
     result = registry.get_command("add-note").run(args, data)
 
     assert result.startswith("❌")
@@ -102,7 +147,10 @@ def test_note_commands_validate_arguments(registry, data, command_name, args):
 @pytest.mark.parametrize(
     ("name", "args"),
     [
-        ("add-note", ["--title", "List", "--text", "Buy", "--unknown", "value"]),
+        (
+            "add-note",
+            ["--title", "List", "--text", "Buy", "--unknown", "value"],
+        ),
         ("add-note", ["--title", "List", "--text", "Buy", "--title", "Other"]),
         ("update-note", ["--title", "List", "--text"]),
         ("delete-note", ["List"]),
@@ -110,9 +158,15 @@ def test_note_commands_validate_arguments(registry, data, command_name, args):
         ("delete-note-tags", ["--tags", "food"]),
     ],
 )
-def test_note_commands_reject_bad_options_without_mutation(registry, data, name, args):
+def test_note_commands_reject_bad_options_without_mutation(
+    registry, data, name, args
+):
     data.notebook.add("List", "Original", {"food"})
-    assert registry.get_command(name).run(args, data).startswith("❌ Invalid arguments.")
+    assert (
+        registry.get_command(name)
+        .run(args, data)
+        .startswith("❌ Invalid arguments.")
+    )
     assert data.notebook["list"].text.value == "Original"
     assert data.notebook["list"].tags == {Tag("food")}
 
@@ -121,7 +175,9 @@ def test_add_note_rejects_duplicate_title(registry, data):
     command = registry.get_command("add-note")
     command.run(["--title", "Shopping", "--text", "First", "note"], data)
 
-    result = command.run(["--title", "shopping", "--text", "Second", "note"], data)
+    result = command.run(
+        ["--title", "shopping", "--text", "Second", "note"], data
+    )
 
     assert result.startswith("❌")
     assert "already exists" in result
@@ -130,9 +186,14 @@ def test_add_note_rejects_duplicate_title(registry, data):
 
 @pytest.mark.parametrize(
     ("command_name", "args"),
-    [("update-note", ["--title", "missing", "--text", "new", "text"]), ("delete-note", ["--title", "missing"])],
+    [
+        ("update-note", ["--title", "missing", "--text", "new", "text"]),
+        ("delete-note", ["--title", "missing"]),
+    ],
 )
-def test_update_and_delete_require_existing_note(registry, data, command_name, args):
+def test_update_and_delete_require_existing_note(
+    registry, data, command_name, args
+):
     result = registry.get_command(command_name).run(args, data)
     assert result.startswith("❌")
     assert "not found" in result
@@ -141,22 +202,44 @@ def test_update_and_delete_require_existing_note(registry, data, command_name, a
 def test_update_note_replaces_tags_and_optionally_updates_text(registry, data):
     data.notebook.add("Grocery List", "Buy milk", {"old", "home"})
     command = registry.get_command("update-note")
-    assert command.run(["--tags", "FOOD", "food", "--title", "grocery", "list"], data) == "✅ Note 'grocery list' updated."
+    assert (
+        command.run(
+            ["--tags", "FOOD", "food", "--title", "grocery", "list"], data
+        )
+        == "✅ Note 'grocery list' updated."
+    )
     assert data.notebook["GROCERY LIST"].text.value == "Buy milk"
     assert data.notebook["GROCERY LIST"].tags == {Tag("food")}
-    assert command.run(
-        ["--title", "Grocery", "List", "--text", "Buy", "bread", "--tags", "home"], data
-    ) == "✅ Note 'Grocery List' updated."
+    assert (
+        command.run(
+            [
+                "--title",
+                "Grocery",
+                "List",
+                "--text",
+                "Buy",
+                "bread",
+                "--tags",
+                "home",
+            ],
+            data,
+        )
+        == "✅ Note 'Grocery List' updated."
+    )
     assert data.notebook["grocery list"].text.value == "Buy bread"
     assert data.notebook["grocery list"].tags == {Tag("home")}
-    assert command.run(["--title", "Grocery", "List", "--text", "Tea"], data) == "✅ Note 'Grocery List' updated."
+    assert (
+        command.run(["--title", "Grocery", "List", "--text", "Tea"], data)
+        == "✅ Note 'Grocery List' updated."
+    )
     assert data.notebook["grocery list"].tags == {Tag("home")}
 
 
 def test_update_note_invalid_tag_does_not_change_text(registry, data):
     data.notebook.add("List", "Original", {"old"})
     result = registry.get_command("update-note").run(
-        ["--title", "List", "--text", "Changed", "--tags", "good", "bad tag"], data
+        ["--title", "List", "--text", "Changed", "--tags", "good", "bad tag"],
+        data,
     )
     assert result.startswith("❌")
     assert data.notebook["list"].text.value == "Original"
@@ -213,7 +296,15 @@ def test_search_returns_all_matching_text(registry, data):
             "Shopping\n    text: Buy milk and bread\n    tags: food, home",
         ),
         (
-            ["--text", "milk", "--tags", "missing", "food", "--title", "shopping"],
+            [
+                "--text",
+                "milk",
+                "--tags",
+                "missing",
+                "food",
+                "--title",
+                "shopping",
+            ],
             "Shopping\n    text: Buy milk and bread\n    tags: food, home",
         ),
         (["--title", "shoptrip", "--tags", "food"], "ℹ️  No notes found."),
@@ -231,13 +322,21 @@ def test_find_notes_optional_filters(registry, data, args, expected):
 @pytest.mark.parametrize(
     "args",
     [
-        ["--title"], ["--text", "--tags", "food"], ["--tags"],
-        ["--unknown", "value"], ["--title", "shop", "--title", "other"],
-        ["milk", "--tags", "food"], ["milk"], ["--tags", ""], ["--text", " "],
+        ["--title"],
+        ["--text", "--tags", "food"],
+        ["--tags"],
+        ["--unknown", "value"],
+        ["--title", "shop", "--title", "other"],
+        ["milk", "--tags", "food"],
+        ["milk"],
+        ["--tags", ""],
+        ["--text", " "],
     ],
 )
 def test_find_notes_rejects_malformed_filters(registry, data, args):
-    assert registry.get_command("search-notes").run(args, data).startswith("❌")
+    assert (
+        registry.get_command("search-notes").run(args, data).startswith("❌")
+    )
 
 
 def test_find_notes_without_filters_on_empty_notebook(registry, data):
@@ -274,12 +373,16 @@ def test_find_notes_query_matches_title_text_or_tags(registry, data):
 
 
 def test_find_notes_requires_query_or_filters(registry, data):
-    assert registry.get_command("search-notes").run([], data).startswith(
-        "❌ Invalid arguments."
+    assert (
+        registry.get_command("search-notes")
+        .run([], data)
+        .startswith("❌ Invalid arguments.")
     )
-    assert registry.get_command("search-notes").run(
-        ["--query", "milk", "--title", "Shopping"], data
-    ).startswith("❌ Invalid arguments.")
+    assert (
+        registry.get_command("search-notes")
+        .run(["--query", "milk", "--title", "Shopping"], data)
+        .startswith("❌ Invalid arguments.")
+    )
 
 
 def test_find_notes_field_filters_use_and_semantics(registry, data):
@@ -310,30 +413,50 @@ def test_tag_commands(registry, data):
     data.notebook.add("shopping", "Buy milk")
     data.notebook.add("holiday", "Pack bags")
     data.notebook.add("untagged", "Other")
-    assert registry.get_command("add-note-tags").run(
-        ["--title", "shopping", "--tags", "food", "personal"], data
-    ) == "✅ Tags added to note 'shopping'."
-    assert registry.get_command("add-note-tags").run(
-        ["--title", "holiday", "--tags", "travel", "personal"], data
-    ) == "✅ Tags added to note 'holiday'."
+    assert (
+        registry.get_command("add-note-tags").run(
+            ["--title", "shopping", "--tags", "food", "personal"], data
+        )
+        == "✅ Tags added to note 'shopping'."
+    )
+    assert (
+        registry.get_command("add-note-tags").run(
+            ["--title", "holiday", "--tags", "travel", "personal"], data
+        )
+        == "✅ Tags added to note 'holiday'."
+    )
     assert registry.get_command("search-notes").run(
         ["--tags", "FOOD", "travel"], data
     ) == (
         "shopping\n    text: Buy milk\n    tags: food, personal\n\n"
         "holiday\n    text: Pack bags\n    tags: personal, travel"
     )
-    assert registry.get_command("delete-note-tags").run(
-        ["--title", "shopping", "--tags", "food"], data
-    ) == "✅ Tags removed from note 'shopping'."
-    assert registry.get_command("search-notes").run(["--tags", "food"], data) == "ℹ️  No notes found."
-    assert registry.get_command("search-notes").run(
-        ["--title", "HOLI"], data
-    ) == "holiday\n    text: Pack bags\n    tags: personal, travel"
+    assert (
+        registry.get_command("delete-note-tags").run(
+            ["--title", "shopping", "--tags", "food"], data
+        )
+        == "✅ Tags removed from note 'shopping'."
+    )
+    assert (
+        registry.get_command("search-notes").run(["--tags", "food"], data)
+        == "ℹ️  No notes found."
+    )
+    assert (
+        registry.get_command("search-notes").run(["--title", "HOLI"], data)
+        == "holiday\n    text: Pack bags\n    tags: personal, travel"
+    )
 
 
 @pytest.mark.parametrize(
     ("name", "args"),
-    [("add-note-tags", ["--title", "shopping"]), ("delete-note-tags", ["--title", "shopping"])],
+    [
+        ("add-note-tags", ["--title", "shopping"]),
+        ("delete-note-tags", ["--title", "shopping"]),
+    ],
 )
 def test_tag_commands_validate_arguments(registry, data, name, args):
-    assert registry.get_command(name).run(args, data).startswith("❌ Invalid arguments.")
+    assert (
+        registry.get_command(name)
+        .run(args, data)
+        .startswith("❌ Invalid arguments.")
+    )

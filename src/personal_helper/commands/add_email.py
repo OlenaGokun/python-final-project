@@ -1,4 +1,3 @@
-import personal_helper
 from personal_helper.commands.base_command import AddressBookCommand
 from personal_helper.commands.contact_field_retry import ContactFieldRetry
 from personal_helper.core.data import parse_options
@@ -19,7 +18,9 @@ class AddEmailCommand(ContactFieldRetry, AddressBookCommand):
         return "add-email --name <name> --email <email>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name", "--email"}
         options = parse_options(
             args, required, required, self.get_usage(), single={"--email"}
