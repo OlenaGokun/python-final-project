@@ -109,7 +109,7 @@ python -m coverage html
 - `show-all-notes` — Show all notes
 - `sort-notes-by-tags --tags <tag> [<tag2> ...]` — Sort notes prioritizing matching tags
 - `add-note-tags --title <title> --tags <tag> [tag ...]` — Add tags to a note
-- `delete-note-tags --title <title> --tags <tag> [tag ...]` — Remove tags from a note
+- `delete-note-tags --title <title> [--tags <tag> [tag ...]]` — Remove selected tags, or all tags if `--tags` is omitted
 - `exit` — Quit the program
 
 `add-phone` defaults to the `main` alias. An alias can be any single word and must
@@ -184,7 +184,8 @@ title contains `shop`, text contains `buy milk`, and tags include `food` or
 `show-all-notes` or `show-all-contacts` to list all records without filters.
 `update-note` requires `--text`, `--tags`, or both. Its `--tags` option
 replaces all existing tags; use `delete-note-tags` to remove individual tags
-or clear them all.
+or omit `--tags` to clear them all. If `--tags` is present, it requires at
+least one tag.
 
 ### Interactive Help
 

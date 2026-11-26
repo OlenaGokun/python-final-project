@@ -113,6 +113,8 @@ def test_cli_note_tag_commands(monkeypatch, capsys, tmp_path):
             "search-notes --tags FOOD",
             "delete-note-tags --title Shopping --tags food",
             "search-notes --tags food",
+            "delete-note-tags --title Shopping",
+            "search-notes --title Shopping",
             "exit",
         ]
     )
@@ -125,9 +127,10 @@ def test_cli_note_tag_commands(monkeypatch, capsys, tmp_path):
     assert "✅ Tags added to note 'Shopping'." in output
     assert "✅ Tags removed from note 'Shopping'." in output
     assert "ℹ️  No notes found." in output
+    assert "Shopping\n    text: Buy milk\n    tags: —" in output
     assert {
         tag.value for tag in load_data(path).notebook["shopping"].tags
-    } == {"home"}
+    } == set()
 
 
 def test_cli_multiword_names_and_titles_without_quotes(
