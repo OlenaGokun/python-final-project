@@ -3,6 +3,7 @@ import pickle
 from colorama import just_fix_windows_console
 
 from personal_helper import parse_input, CommandRegistry
+from personal_helper.command_suggestions import suggest_commands
 from personal_helper.models import PersonalHelper
 from personal_helper.commands.base_command import ExitRequest
 from personal_helper.commands.contact_field_retry import ContactFieldRetry
@@ -102,6 +103,14 @@ def main():
         cmd = registry.get_command(command)
         if cmd is None:
             print(error_message("Invalid command."))
+            if len(command) >= 3:
+                names = (
+                    registered.get_command_name()
+                    for registered in registry.get_all_commands()
+                )
+                suggestions = suggest_commands(command, names)
+                if suggestions:
+                    print(f"Did you mean: {', '.join(suggestions)}?")
             continue
 
         try:
