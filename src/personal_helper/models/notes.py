@@ -113,6 +113,21 @@ class Notebook(UserDict):
     def remove_tags(self, title: str, tags: set[str]) -> None:
         self._require(title).remove_tags(tags)
 
+    def sort_by_tags(self, tags: set[str] | list[str] | tuple[str, ...]) -> tuple[Note, ...]:
+        selected = {Tag(tag) for tag in tags}
+        if not selected:
+            raise InvalidNoteError("At least one tag is required.")
+
+        matched: list[Note] = []
+        remaining: list[Note] = []
+        for note in self.data.values():
+            if selected.intersection(note.tags):
+                matched.append(note)
+            else:
+                remaining.append(note)
+
+        return tuple((*matched, *remaining))
+        
     def __str__(self) -> str:
         if not self.data:
             return "Notebook is empty."
