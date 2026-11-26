@@ -11,64 +11,90 @@ class TestIntegration:
     @staticmethod
     def run(registry, data, command_name, args=()):
         command = registry.get_command(command_name)
-        assert command is not None, f"Command {command_name!r} was not registered."
+        assert command is not None, (
+            f"Command {command_name!r} was not registered."
+        )
         return command.run(list(args), data)
 
     def test_contact_command_workflow(self, registry, data, monkeypatch):
-        run = lambda command, args=(): self.run(registry, data, command, args)
+        def run(command, args=()):
+            return self.run(registry, data, command, args)
 
         assert run("hello") == "How can I help you?"
         assert "Available Commands" in run("help")
-        assert "search-contacts" in run("help", ["--command", "search-contacts"])
+        assert "search-contacts" in run(
+            "help", ["--command", "search-contacts"]
+        )
         assert "Unknown command" in run("help", ["--command", "missing"])
         assert run("show-all-contacts") == "ℹ️  No contacts found."
-        assert run("show-birthdays") == "ℹ️  No upcoming birthdays in the next 7 days."
+        assert (
+            run("show-birthdays")
+            == "ℹ️  No upcoming birthdays in the next 7 days."
+        )
 
-        assert run("add-contact", ["--name", "No Birthday"]) == "✅ Contact 'No Birthday' added."
+        assert (
+            run("add-contact", ["--name", "No Birthday"])
+            == "✅ Contact 'No Birthday' added."
+        )
         assert run("show-birthday", ["--name", "No Birthday"]) == (
             "ℹ️  No Birthday has no birthday set."
         )
-        assert run(
-            "add-contact",
-            [
-                "--name",
-                "Alex Rivera",
-                "--phone",
-                "5012345671",
-                "5012345672",
-                "--email",
-                "old@example.com",
-                "--birthday",
-                "03.01.2000",
-            ],
-        ) == "✅ Contact 'Alex Rivera' added."
-        assert run(
-            "add-email",
-            ["--name", "Alex Rivera", "--email", "alex@example.com"],
-        ) == "✅ Email added for Alex Rivera."
-        assert run(
-            "add-address",
-            ["--name", "Alex Rivera", "--address", "Main", "st.", "5"],
-        ) == "✅ Address added for Alex Rivera."
-        assert run(
-            "add-birthday",
-            ["--name", "Alex Rivera", "--birthday", "03.01.2000"],
-        ) == "✅ Birthday added for Alex Rivera."
+        assert (
+            run(
+                "add-contact",
+                [
+                    "--name",
+                    "Alex Rivera",
+                    "--phone",
+                    "5012345671",
+                    "5012345672",
+                    "--email",
+                    "old@example.com",
+                    "--birthday",
+                    "03.01.2000",
+                ],
+            )
+            == "✅ Contact 'Alex Rivera' added."
+        )
+        assert (
+            run(
+                "add-email",
+                ["--name", "Alex Rivera", "--email", "alex@example.com"],
+            )
+            == "✅ Email added for Alex Rivera."
+        )
+        assert (
+            run(
+                "add-address",
+                ["--name", "Alex Rivera", "--address", "Main", "st.", "5"],
+            )
+            == "✅ Address added for Alex Rivera."
+        )
+        assert (
+            run(
+                "add-birthday",
+                ["--name", "Alex Rivera", "--birthday", "03.01.2000"],
+            )
+            == "✅ Birthday added for Alex Rivera."
+        )
         assert run("show-birthday", ["--name", "Alex Rivera"]) == (
             "🎂 Alex Rivera's birthday: 03.01.2000"
         )
 
-        assert run(
-            "change-phone",
-            [
-                "--name",
-                "Alex Rivera",
-                "--old-phone",
-                "5012345671",
-                "--new-phone",
-                "5099999999",
-            ],
-        ) == "✅ Contact 'Alex Rivera' updated."
+        assert (
+            run(
+                "change-phone",
+                [
+                    "--name",
+                    "Alex Rivera",
+                    "--old-phone",
+                    "5012345671",
+                    "--new-phone",
+                    "5099999999",
+                ],
+            )
+            == "✅ Contact 'Alex Rivera' updated."
+        )
         contact = run("show-contact", ["--name", "Alex Rivera"])
         assert "5099999999" in contact and "5012345672" in contact
         assert "alex@example.com" in contact
@@ -90,7 +116,9 @@ class TestIntegration:
         assert isinstance(run("exit"), ExitRequest)
 
     def test_contact_search_query_fields_and_validation(self, registry, data):
-        run = lambda args: self.run(registry, data, "search-contacts", args)
+        def run(args):
+            return self.run(registry, data, "search-contacts", args)
+
         self.run(
             registry,
             data,
@@ -156,35 +184,42 @@ class TestIntegration:
         )
 
     def test_note_command_workflow_search_and_validation(self, registry, data):
-        run = lambda command, args=(): self.run(registry, data, command, args)
+        def run(command, args=()):
+            return self.run(registry, data, command, args)
 
         assert run("show-all-notes") == "ℹ️  No notes found."
-        assert run(
-            "add-note",
-            [
-                "--title",
-                "Grocery list",
-                "--text",
-                "Buy",
-                "milk",
-                "and",
-                "bread",
-                "--tags",
-                "food",
-                "home",
-            ],
-        ) == "✅ Note 'Grocery list' added."
-        assert run(
-            "add-note",
-            [
-                "--title",
-                "Travel plans",
-                "--text",
-                "Book train",
-                "--tags",
-                "travel",
-            ],
-        ) == "✅ Note 'Travel plans' added."
+        assert (
+            run(
+                "add-note",
+                [
+                    "--title",
+                    "Grocery list",
+                    "--text",
+                    "Buy",
+                    "milk",
+                    "and",
+                    "bread",
+                    "--tags",
+                    "food",
+                    "home",
+                ],
+            )
+            == "✅ Note 'Grocery list' added."
+        )
+        assert (
+            run(
+                "add-note",
+                [
+                    "--title",
+                    "Travel plans",
+                    "--text",
+                    "Book train",
+                    "--tags",
+                    "travel",
+                ],
+            )
+            == "✅ Note 'Travel plans' added."
+        )
 
         assert run("search-notes", ["--query", "grocery"]) == (
             "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
@@ -204,44 +239,64 @@ class TestIntegration:
         assert run("search-notes", ["--tags", "HOME"]) == (
             "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
         )
-        assert run(
-            "search-notes",
-            ["--title", "grocery", "--text", "milk", "--tags", "home"],
-        ) == "Grocery list\n    text: Buy milk and bread\n    tags: food, home"
-        assert run(
-            "search-notes",
-            ["--title", "grocery", "--text", "milk", "--tags", "travel"],
-        ) == "ℹ️  No notes found."
-        assert run("search-notes", ["--query", "missing"]) == "ℹ️  No notes found."
-        assert run("search-notes").startswith("❌ Invalid arguments. Provide --query")
+        assert (
+            run(
+                "search-notes",
+                ["--title", "grocery", "--text", "milk", "--tags", "home"],
+            )
+            == "Grocery list\n    text: Buy milk and bread\n"
+            "    tags: food, home"
+        )
+        assert (
+            run(
+                "search-notes",
+                ["--title", "grocery", "--text", "milk", "--tags", "travel"],
+            )
+            == "ℹ️  No notes found."
+        )
+        assert (
+            run("search-notes", ["--query", "missing"]) == "ℹ️  No notes found."
+        )
+        assert run("search-notes").startswith(
+            "❌ Invalid arguments. Provide --query"
+        )
         assert run(
             "search-notes", ["--query", "milk", "--title", "Grocery"]
         ).startswith("❌ Invalid arguments. --query cannot be combined")
 
-        assert run(
-            "add-note-tags",
-            ["--title", "Grocery list", "--tags", "shopping"],
-        ) == "✅ Tags added to note 'Grocery list'."
-        assert run(
-            "update-note",
-            [
-                "--title",
-                "Grocery list",
-                "--text",
-                "Buy",
-                "coffee",
-                "--tags",
-                "home",
-                "drinks",
-            ],
-        ) == "✅ Note 'Grocery list' updated."
+        assert (
+            run(
+                "add-note-tags",
+                ["--title", "Grocery list", "--tags", "shopping"],
+            )
+            == "✅ Tags added to note 'Grocery list'."
+        )
+        assert (
+            run(
+                "update-note",
+                [
+                    "--title",
+                    "Grocery list",
+                    "--text",
+                    "Buy",
+                    "coffee",
+                    "--tags",
+                    "home",
+                    "drinks",
+                ],
+            )
+            == "✅ Note 'Grocery list' updated."
+        )
         assert run("search-notes", ["--query", "coffee"]) == (
             "Grocery list\n    text: Buy coffee\n    tags: drinks, home"
         )
-        assert run(
-            "delete-note-tags",
-            ["--title", "Grocery list", "--tags", "home"],
-        ) == "✅ Tags removed from note 'Grocery list'."
+        assert (
+            run(
+                "delete-note-tags",
+                ["--title", "Grocery list", "--tags", "home"],
+            )
+            == "✅ Tags removed from note 'Grocery list'."
+        )
         assert run("show-all-notes") == (
             "Grocery list: Buy coffee [tags: drinks]\n"
             "Travel plans: Book train [tags: travel]"
@@ -249,4 +304,6 @@ class TestIntegration:
         assert run("delete-note", ["--title", "Grocery list"]) == (
             "✅ Note 'Grocery list' deleted."
         )
-        assert run("show-all-notes") == "Travel plans: Book train [tags: travel]"
+        assert (
+            run("show-all-notes") == "Travel plans: Book train [tags: travel]"
+        )

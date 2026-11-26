@@ -48,7 +48,7 @@ python src
 
 ### Run Tests
 
-For development, install the project with its test dependencies:
+For development, install the project with its test and lint dependencies:
 
 ```bash
 python -m pip install -e ".[dev]"
@@ -57,6 +57,12 @@ python -m pip install -e ".[dev]"
 ```bash
 # Run all tests
 python -m pytest
+```
+
+Check Python code with Ruff:
+
+```bash
+python -m ruff check .
 ```
 
 For coverage, install the separate `coverage` package and run:

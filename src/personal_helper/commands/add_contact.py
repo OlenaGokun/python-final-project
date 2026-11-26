@@ -17,12 +17,15 @@ class AddContact(ContactFieldRetry, AddressBookCommand):
 
     def get_usage(self) -> str:
         return (
-            "add-contact --name <name> [--phone <phone> ...] [--email <email>] "
+            "add-contact --name <name> [--phone <phone> ...] "
+            "[--email <email>] "
             "[--address <address>] [--birthday <DD.MM.YYYY>]"
         )
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         single = {"--email", "--birthday"}
         options = parse_options(
             args,
@@ -34,14 +37,20 @@ class AddContact(ContactFieldRetry, AddressBookCommand):
         name = " ".join(options["--name"])
         phones = options.get("--phone", [])
         email = options["--email"][0] if "--email" in options else None
-        birthday = options["--birthday"][0] if "--birthday" in options else None
-        address = " ".join(options["--address"]) if "--address" in options else None
+        birthday = (
+            options["--birthday"][0] if "--birthday" in options else None
+        )
+        address = (
+            " ".join(options["--address"]) if "--address" in options else None
+        )
 
         record = address_book.find(name)
         is_new_contact = record is None
         if record is None:
             record = Record(name)
-        phones = [self._validate_contact_field(phone, "phone") for phone in phones]
+        phones = [
+            self._validate_contact_field(phone, "phone") for phone in phones
+        ]
         if email is not None:
             email = self._validate_contact_field(email, "email")
         record.update_details(

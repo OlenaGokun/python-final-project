@@ -15,13 +15,20 @@ class ChangePhoneCommand(ContactFieldRetry, AddressBookCommand):
         return "change phone number for a contact; use stored 10 digits for --old-phone and enter --new-phone without spaces"
 
     def get_usage(self) -> str:
-        return "change-phone --name <name> --old-phone <phone-or-alias> --new-phone <phone>"
+        return (
+            "change-phone --name <name> --old-phone <phone-or-alias> "
+            "--new-phone <phone>"
+        )
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         single = {"--old-phone", "--new-phone"}
         required = {"--name", *single}
-        options = parse_options(args, required, required, self.get_usage(), single)
+        options = parse_options(
+            args, required, required, self.get_usage(), single
+        )
         name = " ".join(options["--name"])
         old_phone = options["--old-phone"][0]
         new_phone = options["--new-phone"][0]

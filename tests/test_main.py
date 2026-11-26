@@ -11,7 +11,9 @@ from personal_helper.models import AddressBook, PersonalHelper, Record
 from main import main, print_commands
 
 
-def test_main_dispatches_greeting_and_exit_through_registry(monkeypatch, capsys):
+def test_main_dispatches_greeting_and_exit_through_registry(
+    monkeypatch, capsys
+):
     inputs = iter(["hello", "exit"])
     saves = []
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
@@ -57,41 +59,63 @@ def test_cli_displays_compact_and_detailed_contacts(monkeypatch, capsys):
     assert "\x1b[" not in output
 
 
-def test_notes_are_searchable_after_cli_save_and_reload(monkeypatch, capsys, tmp_path):
+def test_notes_are_searchable_after_cli_save_and_reload(
+    monkeypatch, capsys, tmp_path
+):
     path = tmp_path / "book.pkl"
     monkeypatch.setattr("main.load_data", lambda: load_data(path))
     monkeypatch.setattr("main.save_data", lambda book: save_data(book, path))
-    inputs = iter(["add-note --title Shopping --text Buy milk and bread --tags food home", "exit"])
+    inputs = iter(
+        [
+            "add-note --title Shopping --text Buy milk and bread "
+            "--tags food home",
+            "exit",
+        ]
+    )
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     main()
     capsys.readouterr()
 
-    inputs = iter(["search-notes --tags other FOOD", "search-notes --text MILK AND",
-                   "search-notes --title shop --text milk and --tags home other",
-                   "update-note --title shopping --text Buy coffee", "exit"])
+    inputs = iter(
+        [
+            "search-notes --tags other FOOD",
+            "search-notes --text MILK AND",
+            "search-notes --title shop --text milk and --tags home other",
+            "update-note --title shopping --text Buy coffee",
+            "exit",
+        ]
+    )
     main()
     output = capsys.readouterr().out
 
-    assert output.count(
-        "Shopping\n    text: Buy milk and bread\n    tags: food, home"
-    ) == 3
+    assert (
+        output.count(
+            "Shopping\n    text: Buy milk and bread\n    tags: food, home"
+        )
+        == 3
+    )
     assert "✅ Note 'shopping' updated." in output
     assert load_data(path).notebook["shopping"].text.value == "Buy coffee"
-    assert load_data(path).notebook.search(tags={"home"})[0].text.value == "Buy coffee"
+    assert (
+        load_data(path).notebook.search(tags={"home"})[0].text.value
+        == "Buy coffee"
+    )
 
 
 def test_cli_note_tag_commands(monkeypatch, capsys, tmp_path):
     path = tmp_path / "book.pkl"
     monkeypatch.setattr("main.load_data", lambda: load_data(path))
     monkeypatch.setattr("main.save_data", lambda data: save_data(data, path))
-    inputs = iter([
-        "add-note --title Shopping --text Buy milk",
-        "add-note-tags --title Shopping --tags food home",
-        "search-notes --tags FOOD",
-        "delete-note-tags --title Shopping --tags food",
-        "search-notes --tags food",
-        "exit",
-    ])
+    inputs = iter(
+        [
+            "add-note --title Shopping --text Buy milk",
+            "add-note-tags --title Shopping --tags food home",
+            "search-notes --tags FOOD",
+            "delete-note-tags --title Shopping --tags food",
+            "search-notes --tags food",
+            "exit",
+        ]
+    )
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     main()
@@ -101,26 +125,34 @@ def test_cli_note_tag_commands(monkeypatch, capsys, tmp_path):
     assert "✅ Tags added to note 'Shopping'." in output
     assert "✅ Tags removed from note 'Shopping'." in output
     assert "ℹ️  No notes found." in output
-    assert {tag.value for tag in load_data(path).notebook["shopping"].tags} == {"home"}
+    assert {
+        tag.value for tag in load_data(path).notebook["shopping"].tags
+    } == {"home"}
 
 
-def test_cli_multiword_names_and_titles_without_quotes(monkeypatch, capsys, tmp_path):
+def test_cli_multiword_names_and_titles_without_quotes(
+    monkeypatch, capsys, tmp_path
+):
     path = tmp_path / "book.pkl"
     monkeypatch.setattr("main.load_data", lambda: load_data(path))
     monkeypatch.setattr("main.save_data", lambda data: save_data(data, path))
-    inputs = iter([
-        "add-contact --phone 5012345671 --name Mary Jane",
-        "show-contact --name mary jane",
-        "add-birthday --birthday 01.01.2000 --name Mary Jane",
-        "show-birthday --name Mary Jane",
-        "change-phone --new-phone 5099999999 --name Mary Jane --old-phone 5012345671",
-        "add-note --tags food home --title Grocery list --text Buy milk",
-        "add-note-tags --tags shopping --title Grocery list",
-        "delete-note-tags --title grocery list --tags food",
-        "update-note --text Buy bread --title GROCERY LIST --tags home new",
-        "search-notes --title grocery list --tags new",
-        "exit",
-    ])
+    inputs = iter(
+        [
+            "add-contact --phone 5012345671 --name Mary Jane",
+            "show-contact --name mary jane",
+            "add-birthday --birthday 01.01.2000 --name Mary Jane",
+            "show-birthday --name Mary Jane",
+            "change-phone --new-phone 5099999999 --name Mary Jane "
+            "--old-phone 5012345671",
+            "add-note --tags food home --title Grocery list --text Buy milk",
+            "add-note-tags --tags shopping --title Grocery list",
+            "delete-note-tags --title grocery list --tags food",
+            "update-note --text Buy bread --title GROCERY LIST "
+            "--tags home new",
+            "search-notes --title grocery list --tags new",
+            "exit",
+        ]
+    )
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     main()
@@ -132,9 +164,14 @@ def test_cli_multiword_names_and_titles_without_quotes(monkeypatch, capsys, tmp_
     assert "❌" not in output
     data = load_data(path)
     assert data.address_book["MARY JANE"].phones[0].value == "5099999999"
-    assert {tag.value for tag in data.notebook["grocery list"].tags} == {"home", "new"}
+    assert {tag.value for tag in data.notebook["grocery list"].tags} == {
+        "home",
+        "new",
+    }
 
-    inputs = iter(["delete-note --title Grocery list", "show-all-notes", "exit"])
+    inputs = iter(
+        ["delete-note --title Grocery list", "show-all-notes", "exit"]
+    )
     main()
     assert "ℹ️  No notes found." in capsys.readouterr().out
     assert len(load_data(path).notebook) == 0
@@ -148,7 +185,11 @@ def test_cli_migrates_existing_contacts(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr("main.load_data", lambda: load_data(path))
     monkeypatch.setattr("main.save_data", lambda data: save_data(data, path))
     inputs = iter(
-        ["show-all-contacts", "add-note --title Plans --text Call tomorrow", "exit"]
+        [
+            "show-all-contacts",
+            "add-note --title Plans --text Call tomorrow",
+            "exit",
+        ]
     )
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
@@ -204,16 +245,20 @@ def test_main_handles_empty_unknown_and_failing_commands(monkeypatch, capsys):
     assert len(saves) == 1
 
 
-def test_cli_retries_invalid_contact_fields_without_losing_other_values(monkeypatch, capsys):
+def test_cli_retries_invalid_contact_fields_without_losing_other_values(
+    monkeypatch, capsys
+):
     data = PersonalHelper()
-    inputs = iter([
-        "add-contact --name Jane --phone 0501234567 bad 0501234569 "
-        "--email bad-email --address Main st. 5 --birthday 01.01.1990",
-        "still-bad",
-        "0501234568",
-        "jane@example.com",
-        "exit",
-    ])
+    inputs = iter(
+        [
+            "add-contact --name Jane --phone 0501234567 bad 0501234569 "
+            "--email bad-email --address Main st. 5 --birthday 01.01.1990",
+            "still-bad",
+            "0501234568",
+            "jane@example.com",
+            "exit",
+        ]
+    )
     prompts = []
 
     def read_input(prompt):
@@ -228,7 +273,9 @@ def test_cli_retries_invalid_contact_fields_without_losing_other_values(monkeypa
 
     record = data.address_book["Jane"]
     assert [phone.value for phone in record.phones] == [
-        "0501234567", "0501234568", "0501234569"
+        "0501234567",
+        "0501234568",
+        "0501234569",
     ]
     assert record.email.value == "jane@example.com"
     assert record.address.value == "Main st. 5"
@@ -245,12 +292,22 @@ def test_cli_retries_invalid_contact_fields_without_losing_other_values(monkeypa
 @pytest.mark.parametrize(
     ("command", "replacement", "field"),
     [
-        ("add-phone --name Jane --phone bad --alias work", "0501234568", "phone"),
-        ("change-phone --name Jane --old-phone 0501234567 --new-phone bad", "0501234569", "phone"),
+        (
+            "add-phone --name Jane --phone bad --alias work",
+            "0501234568",
+            "phone",
+        ),
+        (
+            "change-phone --name Jane --old-phone 0501234567 --new-phone bad",
+            "0501234569",
+            "phone",
+        ),
         ("add-email --name Jane --email bad", "jane@example.com", "email"),
     ],
 )
-def test_cli_retries_other_contact_commands(monkeypatch, capsys, command, replacement, field):
+def test_cli_retries_other_contact_commands(
+    monkeypatch, capsys, command, replacement, field
+):
     data = PersonalHelper()
     record = data.address_book.add_record(Record("Jane"))
     record.add_phone("0501234567")
@@ -279,17 +336,23 @@ def test_cli_retries_other_contact_commands(monkeypatch, capsys, command, replac
             assert record.find_phone(replacement).alias == "work"
 
 
-@pytest.mark.parametrize("cancel", ["cancel", "CANCEL", EOFError, KeyboardInterrupt])
-def test_cli_cancel_retry_does_not_change_existing_contact(monkeypatch, capsys, cancel):
+@pytest.mark.parametrize(
+    "cancel", ["cancel", "CANCEL", EOFError, KeyboardInterrupt]
+)
+def test_cli_cancel_retry_does_not_change_existing_contact(
+    monkeypatch, capsys, cancel
+):
     data = PersonalHelper()
     record = data.address_book.add_record(Record("Jane"))
     record.add_phone("0501234567")
     record.add_email("old@example.com")
-    inputs = iter([
-        "add-contact --name Jane --phone 0501234568 --email invalid",
-        cancel,
-        "exit",
-    ])
+    inputs = iter(
+        [
+            "add-contact --name Jane --phone 0501234568 --email invalid",
+            cancel,
+            "exit",
+        ]
+    )
 
     def read_input(_):
         value = next(inputs)
@@ -310,7 +373,9 @@ def test_cli_cancel_retry_does_not_change_existing_contact(monkeypatch, capsys, 
 
 def test_cli_cancel_retry_does_not_create_new_contact(monkeypatch, capsys):
     data = PersonalHelper()
-    inputs = iter(["add-contact --name Jane --phone invalid", "cancel", "exit"])
+    inputs = iter(
+        ["add-contact --name Jane --phone invalid", "cancel", "exit"]
+    )
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     monkeypatch.setattr("main.load_data", lambda: data)
     monkeypatch.setattr("main.save_data", lambda _: None)
@@ -325,7 +390,8 @@ def test_cli_cancel_retry_does_not_create_new_contact(monkeypatch, capsys):
     "command",
     [
         "add-phone --name Jane --phone invalid --alias work",
-        "change-phone --name Jane --old-phone 0501234567 --new-phone invalid",
+        "change-phone --name Jane --old-phone 0501234567 "
+        "--new-phone invalid",
         "add-email --name Jane --email invalid",
     ],
 )
@@ -348,13 +414,18 @@ def test_cli_cancel_retry_does_not_change_contact_for_other_commands(
     assert "❌ Command canceled." in capsys.readouterr().out
 
 
-def test_cli_does_not_retry_new_phone_when_old_phone_is_missing(monkeypatch, capsys):
+def test_cli_does_not_retry_new_phone_when_old_phone_is_missing(
+    monkeypatch, capsys
+):
     data = PersonalHelper()
     data.address_book.add_record(Record("Jane"))
-    inputs = iter([
-        "change-phone --name Jane --old-phone 0501234567 --new-phone invalid",
-        "exit",
-    ])
+    inputs = iter(
+        [
+            "change-phone --name Jane --old-phone 0501234567 "
+            "--new-phone invalid",
+            "exit",
+        ]
+    )
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     monkeypatch.setattr("main.load_data", lambda: data)
     monkeypatch.setattr("main.save_data", lambda _: None)
@@ -392,7 +463,9 @@ def test_cli_colors_field_retry_error_in_terminal(monkeypatch):
             return True
 
     terminal = Terminal()
-    inputs = iter(["add-contact --name Jane --email invalid", "cancel", "exit"])
+    inputs = iter(
+        ["add-contact --name Jane --email invalid", "cancel", "exit"]
+    )
     monkeypatch.setattr(formatting.sys, "stdout", terminal)
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     monkeypatch.setattr("main.load_data", PersonalHelper)
@@ -401,7 +474,10 @@ def test_cli_colors_field_retry_error_in_terminal(monkeypatch):
     main()
 
     output = terminal.getvalue()
-    assert f"{Fore.RED}❌ Invalid email format: 'invalid'.{Style.RESET_ALL}" in output
+    assert (
+        f"{Fore.RED}❌ Invalid email format: 'invalid'.{Style.RESET_ALL}"
+        in output
+    )
     assert f"{Fore.RED}❌ Command canceled.{Style.RESET_ALL}" in output
 
 
@@ -426,8 +502,16 @@ def test_main_colors_load_and_save_errors_in_terminal(monkeypatch):
     main()
 
     output = terminal.getvalue()
-    assert f"{Fore.RED}Failed to load application data: load failed{Style.RESET_ALL}" in output
-    assert f"{Fore.RED}Failed to save application data: save failed{Style.RESET_ALL}" in output
+    assert (
+        f"{Fore.RED}Failed to load application data: load failed"
+        f"{Style.RESET_ALL}"
+        in output
+    )
+    assert (
+        f"{Fore.RED}Failed to save application data: save failed"
+        f"{Style.RESET_ALL}"
+        in output
+    )
     assert f"{Fore.RED}Please enter yes or no.{Style.RESET_ALL}" in output
     assert "Starting with empty application data." in output
 
@@ -526,8 +610,16 @@ def test_main_exits_when_save_confirmation_is_interrupted(
 @pytest.mark.parametrize(
     ("operation", "confirmation", "expected_name"),
     [
-        ("rename-contact --name Mary Jane --new-name Mary Doe", [], "Mary Doe"),
-        ("rename-contact --name Mary Jane --new-name MARY JANE", [], "MARY JANE"),
+        (
+            "rename-contact --name Mary Jane --new-name Mary Doe",
+            [],
+            "Mary Doe",
+        ),
+        (
+            "rename-contact --name Mary Jane --new-name MARY JANE",
+            [],
+            "MARY JANE",
+        ),
         ("delete-contact --name Mary Jane", ["yes"], None),
     ],
 )
@@ -543,14 +635,19 @@ def test_cli_contact_changes_survive_restart(
     data.notebook.add("Mary Jane", "Independent note", {"personal"})
     save_data(data, path)
     monkeypatch.setattr("main.load_data", lambda: load_data(path))
-    monkeypatch.setattr("main.save_data", lambda updated: save_data(updated, path))
+    monkeypatch.setattr(
+        "main.save_data", lambda updated: save_data(updated, path)
+    )
 
     inputs = iter([operation, *confirmation, "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     main()
     operation_output = capsys.readouterr().out
     if expected_name:
-        assert f"Contact 'Mary Jane' renamed to '{expected_name}'." in operation_output
+        assert (
+            f"Contact 'Mary Jane' renamed to '{expected_name}'."
+            in operation_output
+        )
     else:
         assert "Contact 'Mary Jane' deleted." in operation_output
 
@@ -567,7 +664,9 @@ def test_cli_contact_changes_survive_restart(
         renamed = reloaded.address_book[expected_name]
         assert renamed.name.value == expected_name
         assert (renamed.phones, renamed.email, renamed.birthday) == (
-            original.phones, original.email, original.birthday
+            original.phones,
+            original.email,
+            original.birthday,
         )
         assert renamed.address == original.address
         assert expected_name in output
@@ -591,11 +690,15 @@ def test_exact_commands_and_prompt_controls_skip_suggestions(
     inputs = iter(["show-all-notes", "show-contact", "go", " ", interrupt])
     turns = []
     saves = []
-    short_command = SimpleNamespace(run=lambda args, data: "Short command ran.")
+    short_command = SimpleNamespace(
+        run=lambda args, data: "Short command ran."
+    )
     original_lookup = CommandRegistry.get_command
 
     def lookup(registry, name):
-        return short_command if name == "go" else original_lookup(registry, name)
+        return (
+            short_command if name == "go" else original_lookup(registry, name)
+        )
 
     def read(prompt):
         assert prompt == "Enter a command: "
@@ -636,7 +739,9 @@ def test_lookup_miss_sends_only_normalized_name_and_live_names(
     names = [cmd.get_command_name() for cmd in registry.get_all_commands()]
     enumerate_commands = Mock(wraps=registry.get_all_commands)
     monkeypatch.setattr(registry, "get_all_commands", enumerate_commands)
-    submissions = iter(["SHOW-ALL-C --name Private Person", "s", "sh", "zzzzzzzz", "exit"])
+    submissions = iter(
+        ["SHOW-ALL-C --name Private Person", "s", "sh", "zzzzzzzz", "exit"]
+    )
     turns = []
 
     def read(prompt):
@@ -650,9 +755,13 @@ def test_lookup_miss_sends_only_normalized_name_and_live_names(
 
     assert turns[1] == ["Invalid command.", "Did you mean: show-all-contacts?"]
     assert turns[2:] == [["Invalid command."]] * 3
-    assert [(token, list(candidates)) for token, candidates in
-            (call.args for call in matcher.call_args_list)] == [
+    assert [
+        (token, list(candidates))
+        for token, candidates in (call.args for call in matcher.call_args_list)
+    ] == [
         ("show-all-c", names),
         ("zzzzzzzz", names),
     ]
-    assert enumerate_commands.call_count == 4  # Setup, help, and two eligible misses.
+    assert (
+        enumerate_commands.call_count == 4
+    )  # Setup, help, and two eligible misses.

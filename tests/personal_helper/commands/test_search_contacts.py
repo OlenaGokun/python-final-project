@@ -26,7 +26,9 @@ def book_with_search_contacts(book):
     return book
 
 
-def test_search_command_returns_matching_contact(registry, book_with_search_contacts):
+def test_search_command_returns_matching_contact(
+    registry, book_with_search_contacts
+):
     result = registry.get_command("search-contacts").run(
         ["--query", "jane@work.org"], PersonalHelper(book_with_search_contacts)
     )
@@ -38,7 +40,9 @@ def test_search_command_returns_matching_contact(registry, book_with_search_cont
     assert "birthday:" in result
 
 
-def test_search_command_joins_multiword_query(registry, book_with_search_contacts):
+def test_search_command_joins_multiword_query(
+    registry, book_with_search_contacts
+):
     result = registry.get_command("search-contacts").run(
         ["--query", "Jane", "Smith"], PersonalHelper(book_with_search_contacts)
     )
@@ -46,7 +50,9 @@ def test_search_command_joins_multiword_query(registry, book_with_search_contact
     assert "Jane Smith" in result
 
 
-def test_search_command_reports_no_matches(registry, book_with_search_contacts):
+def test_search_command_reports_no_matches(
+    registry, book_with_search_contacts
+):
     result = registry.get_command("search-contacts").run(
         ["--query", "unknown_xyz"], PersonalHelper(book_with_search_contacts)
     )
@@ -54,7 +60,9 @@ def test_search_command_reports_no_matches(registry, book_with_search_contacts):
     assert result == "ℹ️  No contacts found."
 
 
-def test_search_command_requires_query_or_field(registry, book_with_search_contacts):
+def test_search_command_requires_query_or_field(
+    registry, book_with_search_contacts
+):
     result = registry.get_command("search-contacts").run(
         [], PersonalHelper(book_with_search_contacts)
     )
@@ -137,7 +145,9 @@ def test_search_displays_multiple_phone_aliases_and_contacts(registry, data):
     jane.add_birthday("21.11.2006")
     data.address_book.add_record(Record("James Doe"))
 
-    result = registry.get_command("search-contacts").run(["--name", "Doe"], data)
+    result = registry.get_command("search-contacts").run(
+        ["--name", "Doe"], data
+    )
 
     assert result == (
         "Jane Doe\n"

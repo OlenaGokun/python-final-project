@@ -16,17 +16,27 @@ class SearchContactsCommand(AddressBookCommand):
 
     def get_usage(self) -> str:
         return (
-            "search-contacts (--query <query> | [--name <name>] [--email <email>] "
-            "[--phone <phone>] [--address <address>] [--birthday <DD.MM.YYYY>])"
+            "search-contacts (--query <query> | [--name <name>] "
+            "[--email <email>] [--phone <phone>] [--address <address>] "
+            "[--birthday <DD.MM.YYYY>])"
         )
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         allowed = {
-            "--query", "--name", "--email", "--phone", "--address", "--birthday"
+            "--query",
+            "--name",
+            "--email",
+            "--phone",
+            "--address",
+            "--birthday",
         }
         single = {"--email", "--phone", "--birthday"}
-        options = parse_options(args, allowed, set(), self.get_usage(), single=single)
+        options = parse_options(
+            args, allowed, set(), self.get_usage(), single=single
+        )
         if not options:
             raise InvalidInputError(
                 f"Invalid arguments. Provide --query or at least one field.\n"
@@ -35,7 +45,8 @@ class SearchContactsCommand(AddressBookCommand):
         field_options = allowed - {"--query"}
         if "--query" in options and options.keys() & field_options:
             raise InvalidInputError(
-                f"Invalid arguments. --query cannot be combined with field filters.\n"
+                "Invalid arguments. --query cannot be combined with "
+                "field filters.\n"
                 f"Usage: {self.get_usage()}"
             )
 
@@ -44,4 +55,6 @@ class SearchContactsCommand(AddressBookCommand):
         if not matches:
             return "ℹ️  No contacts found."
 
-        return "\n\n".join(self.format_contact_details(record) for record in matches)
+        return "\n\n".join(
+            self.format_contact_details(record) for record in matches
+        )

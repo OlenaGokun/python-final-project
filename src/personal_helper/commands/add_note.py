@@ -19,7 +19,10 @@ class AddNoteCommand(NotebookCommand):
     @input_error
     def run_with_notebook(self, args: list, notebook: Notebook) -> str:
         options = parse_options(
-            args, {"--title", "--text", "--tags"}, {"--title", "--text"}, self.get_usage()
+            args,
+            {"--title", "--text", "--tags"},
+            {"--title", "--text"},
+            self.get_usage(),
         )
         title = " ".join(options["--title"])
         text = " ".join(options["--text"])

@@ -13,12 +13,13 @@ def is_one_edit_apart(token: str, name: str) -> bool:
         return False
 
     mismatches = (
-        index for index, (left, right) in enumerate(zip(token, name))
+        index
+        for index, (left, right) in enumerate(zip(token, name))
         if left != right
     )
     first = next(mismatches, None)
     if length_difference == 1:
-        return first is None or token[first:] == name[first + 1:]
+        return first is None or token[first:] == name[first + 1 :]
 
     if first is None:
         return False
@@ -38,4 +39,6 @@ def suggest_commands(token: str, names: Iterable[str]) -> list[str]:
     if substring_matches:
         return substring_matches
 
-    return [name for name in ordered_names if is_one_edit_apart(token, name)][:5]
+    return [name for name in ordered_names if is_one_edit_apart(token, name)][
+        :5
+    ]

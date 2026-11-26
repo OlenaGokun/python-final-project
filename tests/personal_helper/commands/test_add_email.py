@@ -15,7 +15,9 @@ def test_add_email_updates_existing_contact(registry, book_with_contacts):
     assert book_with_contacts["John"].email.value == "john@example.com"
 
 
-def test_add_email_uses_case_insensitive_contact_lookup(registry, book_with_contacts):
+def test_add_email_uses_case_insensitive_contact_lookup(
+    registry, book_with_contacts
+):
     result = registry.get_command("add-email").run(
         ["--name", "john", "--email", "john@example.com"],
         PersonalHelper(book_with_contacts),

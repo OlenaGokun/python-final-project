@@ -2,14 +2,11 @@
 
 import pytest
 from personal_helper.models import PersonalHelper
-from personal_helper.models.book import AddressBook
-from personal_helper.models.record import Record
-from personal_helper.command_registry import CommandRegistry
-from personal_helper.core.exceptions import InvalidInputError, CommandError
 
 # ============================================================================
 # ADD COMMAND TESTS
 # ============================================================================
+
 
 class TestAddCommand:
     """Tests for add command"""
@@ -17,7 +14,9 @@ class TestAddCommand:
     def test_add_new_contact(self, registry, book):
         """Test adding a new contact"""
         cmd = registry.get_command("add-contact")
-        result = cmd.run(["--name", "John", "--phone", "5012345671"], PersonalHelper(book))
+        result = cmd.run(
+            ["--name", "John", "--phone", "5012345671"], PersonalHelper(book)
+        )
 
         assert result == "✅ Contact 'John' added."
         assert "john" in book.data  # Keys are stored lowercase
@@ -83,11 +82,16 @@ class TestAddCommand:
     def test_add_phone_to_existing_contact(self, registry, book_with_contacts):
         """Test adding phone to existing contact"""
         cmd = registry.get_command("add-contact")
-        result = cmd.run(["--name", "John", "--phone", "0559999999"], PersonalHelper(book_with_contacts))
+        result = cmd.run(
+            ["--name", "John", "--phone", "0559999999"],
+            PersonalHelper(book_with_contacts),
+        )
 
         assert result == "✅ Contact 'John' updated."
 
-    def test_add_multiple_phones_to_existing_contact(self, registry, book_with_contacts):
+    def test_add_multiple_phones_to_existing_contact(
+        self, registry, book_with_contacts
+    ):
         cmd = registry.get_command("add-contact")
         result = cmd.run(
             [
@@ -162,7 +166,9 @@ class TestAddCommand:
         assert record.email.value == "john@example.com"
         assert str(record.birthday) == "25.12.1990"
 
-    def test_add_contact_updates_existing_address(self, registry, book_with_contacts):
+    def test_add_contact_updates_existing_address(
+        self, registry, book_with_contacts
+    ):
         command = registry.get_command("add-contact")
         result = command.run(
             ["--name", "John", "--address", "Main", "st.", "5"],
@@ -214,12 +220,14 @@ class TestAddCommand:
     def test_existing_contact_without_phone_is_unchanged(
         self, registry, book_with_contacts
     ):
-        """Adding an existing name without a phone should not alter its phones."""
+        """Adding without a phone leaves existing phones unchanged."""
         cmd = registry.get_command("add-contact")
         record = book_with_contacts.find("John")
         original_phones = record.phones
 
-        result = cmd.run(["--name", "John"], PersonalHelper(book_with_contacts))
+        result = cmd.run(
+            ["--name", "John"], PersonalHelper(book_with_contacts)
+        )
 
         assert result == "✅ Contact 'John' updated."
         assert record.phones == original_phones
@@ -236,10 +244,14 @@ class TestAddCommand:
     def test_add_with_invalid_phone(self, registry, book):
         """Invalid phone values are rejected."""
         cmd = registry.get_command("add-contact")
-        result = cmd.run(["--name", "John", "--phone", "phone1", "phone2"], PersonalHelper(book))
+        result = cmd.run(
+            ["--name", "John", "--phone", "phone1", "phone2"],
+            PersonalHelper(book),
+        )
 
         assert "❌" in result
         assert "Phone must be a valid phone number" in result
+
 
 # ============================================================================
 # ADD BIRTHDAY COMMAND TESTS

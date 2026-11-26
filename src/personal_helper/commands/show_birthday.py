@@ -17,7 +17,9 @@ class ShowBirthdayCommand(AddressBookCommand):
         return "show-birthday --name <name>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         options = parse_options(args, {"--name"}, {"--name"}, self.get_usage())
         record = address_book[" ".join(options["--name"])]
         if record.birthday is None:

@@ -19,7 +19,7 @@ class TestShowBirthdaysCommand:
         assert "No upcoming birthdays" in result
 
     def test_show_birthdays_with_contacts(self, registry, monkeypatch):
-        """Format upcoming birthdays deterministically, including weekend shifts."""
+        """Format upcoming birthdays, including weekend shifts."""
 
         class FrozenDate(date):
             @classmethod
@@ -47,10 +47,16 @@ class TestShowBirthdaysCommand:
         [
             ("1", "🎂 Tomorrow: 30.12.2027"),
             ("10", "🎂 Tomorrow: 30.12.2027\n🎂 January: 06.01.2028"),
-            ("365", "🎂 Tomorrow: 30.12.2027\n🎂 January: 06.01.2028\n🎂 Cutoff: 28.12.2028"),
+            (
+                "365",
+                "🎂 Tomorrow: 30.12.2027\n🎂 January: 06.01.2028\n"
+                "🎂 Cutoff: 28.12.2028",
+            ),
         ],
     )
-    def test_show_birthdays_with_custom_days(self, registry, monkeypatch, days, expected):
+    def test_show_birthdays_with_custom_days(
+        self, registry, monkeypatch, days, expected
+    ):
         class FrozenDate(date):
             @classmethod
             def today(cls):

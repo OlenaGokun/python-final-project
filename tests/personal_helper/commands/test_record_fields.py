@@ -22,13 +22,19 @@ def test_can_edit_and_delete_each_contact_field(
     run("add-contact", [*name, f"--{field}", initial])
     if field == "phone":
         run("add-contact", [*name, "--phone", "5011111111"])
-        run("change-phone", [*name, "--old-phone", initial, "--new-phone", replacement])
+        run(
+            "change-phone",
+            [*name, "--old-phone", initial, "--new-phone", replacement],
+        )
     else:
         run(f"add-{field}", [*name, f"--{field}", replacement])
 
     record = data.address_book["Jane Doe"]
     if field == "phone":
-        assert [phone.value for phone in record.phones] == [replacement, "5011111111"]
+        assert [phone.value for phone in record.phones] == [
+            replacement,
+            "5011111111",
+        ]
     else:
         assert str(getattr(record, field)) == replacement
 

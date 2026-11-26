@@ -2,15 +2,19 @@ from main import main
 from personal_helper.models import Record
 
 
-def test_delete_typo_requires_exact_retry_and_confirmation(monkeypatch, capsys, data):
+def test_delete_typo_requires_exact_retry_and_confirmation(
+    monkeypatch, capsys, data
+):
     name = "Private Test Contact"
     data.address_book.add_record(Record(name))
-    steps = iter([
-        ("Enter a command: ", f"delete-contatc --name {name}"),
-        ("Enter a command: ", f"delete-contact --name {name}"),
-        (f"Delete contact '{name}'? (Y)es/(N)o: ", "yes"),
-        ("Enter a command: ", "exit"),
-    ])
+    steps = iter(
+        [
+            ("Enter a command: ", f"delete-contatc --name {name}"),
+            ("Enter a command: ", f"delete-contact --name {name}"),
+            (f"Delete contact '{name}'? (Y)es/(N)o: ", "yes"),
+            ("Enter a command: ", "exit"),
+        ]
+    )
     saved = []
     turns = []
 

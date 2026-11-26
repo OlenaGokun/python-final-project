@@ -57,7 +57,8 @@ The registry automatically:
 - Registers it and makes it available in the help menu
 
 No manual registration or registration decorator is needed. The name must be
-non-empty, case-folded, free of whitespace, and unique. Command classes must be
+non-empty, unique, contain no whitespace, and remain unchanged by Python's
+`casefold()` method. Command classes must be
 concrete, defined in a module directly under `commands/`, and instantiable
 without arguments.
 

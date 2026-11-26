@@ -8,7 +8,7 @@ from personal_helper.commands.base_command import BaseCommand
 
 
 class CommandRegistry:
-    """Registry that discovers and registers commands by scanning for BaseCommand subclasses"""
+    """Discover and register BaseCommand subclasses."""
 
     def __init__(self) -> None:
         self.commands: dict[str, BaseCommand] = {}
@@ -31,17 +31,23 @@ class CommandRegistry:
                     self._register_command(cls())
 
         if not self.commands:
-            raise RuntimeError("No commands were discovered in personal_helper.commands")
+            raise RuntimeError(
+                "No commands were discovered in personal_helper.commands"
+            )
 
     def _register_command(self, command: BaseCommand) -> None:
         name = command.get_command_name()
         if not isinstance(name, str) or not name.strip():
             raise ValueError(
-                f"Command {type(command).__qualname__} must have a non-empty name"
+                f"Command {type(command).__qualname__} must have a "
+                "non-empty name"
             )
-        if name != name.casefold() or any(character.isspace() for character in name):
+        if name != name.casefold() or any(
+            character.isspace() for character in name
+        ):
             raise ValueError(
-                f"Command name {name!r} must be lowercase and contain no whitespace"
+                f"Command name {name!r} must be lowercase and contain "
+                "no whitespace"
             )
         if name in self.commands:
             raise ValueError(f"Duplicate command name: {name!r}")

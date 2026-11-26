@@ -12,8 +12,12 @@ def test_rename_contact_through_registry(registry, data):
     assert "renamed" in result
     assert data.address_book.find("Mary Jane") is None
     assert data.address_book["Mary Doe"].name.value == "Mary Doe"
-    assert "unchanged" in command.run("--name Mary Doe --new-name Mary Doe".split(), data)
-    assert command.get_usage() in registry.get_command("help").run(["--command", "rename-contact"], data)
+    assert "unchanged" in command.run(
+        "--name Mary Doe --new-name Mary Doe".split(), data
+    )
+    assert command.get_usage() in registry.get_command("help").run(
+        ["--command", "rename-contact"], data
+    )
 
 
 @pytest.mark.parametrize(

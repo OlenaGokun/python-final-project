@@ -2,7 +2,10 @@ from personal_helper.commands.base_command import AddressBookCommand
 from personal_helper.core.data import parse_options
 from personal_helper.core.decorators import input_error
 from personal_helper.core.exceptions import InvalidInputError
-from personal_helper.models.book import AddressBook, DEFAULT_BIRTHDAY_WINDOW_DAYS
+from personal_helper.models.book import (
+    AddressBook,
+    DEFAULT_BIRTHDAY_WINDOW_DAYS,
+)
 
 
 class ShowBirthdaysCommand(AddressBookCommand):
@@ -18,12 +21,16 @@ class ShowBirthdaysCommand(AddressBookCommand):
         return "show-birthdays [--days <days>]"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
-        options = parse_options(args, {"--days"}, set(), self.get_usage(), {"--days"})
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
+        options = parse_options(
+            args, {"--days"}, set(), self.get_usage(), {"--days"}
+        )
         days = DEFAULT_BIRTHDAY_WINDOW_DAYS
         if "--days" in options:
             error_message = (
-                f"Invalid arguments. --days must be an integer from 1 to 365.\n"
+                "Invalid arguments. --days must be an integer from 1 to 365.\n"
                 f"Usage: {self.get_usage()}"
             )
             try:
@@ -40,5 +47,7 @@ class ShowBirthdaysCommand(AddressBookCommand):
             return f"ℹ️  No upcoming birthdays in the next {days} days."
         result = []
         for contact in upcoming:
-            result.append(f"🎂 {contact['name']}: {contact['congratulation_date']}")
+            result.append(
+                f"🎂 {contact['name']}: {contact['congratulation_date']}"
+            )
         return "\n".join(result)

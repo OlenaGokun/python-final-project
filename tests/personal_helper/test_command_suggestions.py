@@ -26,11 +26,26 @@ def test_one_edit_apart(token, name, expected):
 @pytest.mark.parametrize(
     ("token", "names", "expected"),
     [
-        ("add", ["add-g", "add-c", "add-a", "add-f", "add-e", "add-b",
-                 "add-a", "ad"], ["add-a", "add-b", "add-c", "add-e", "add-f", "add-g"]),
+        (
+            "add",
+            [
+                "add-g",
+                "add-c",
+                "add-a",
+                "add-f",
+                "add-e",
+                "add-b",
+                "add-a",
+                "ad",
+            ],
+            ["add-a", "add-b", "add-c", "add-e", "add-f", "add-g"],
+        ),
         ("help", ["yelp", "phelp", "helmet"], ["phelp"]),
-        ("help", ["yelp", "held", "helm", "heap", "held",
-                  "kelp", "helt", "hepl"], ["heap", "held", "helm", "helt", "hepl"]),
+        (
+            "help",
+            ["yelp", "held", "helm", "heap", "held", "kelp", "helt", "hepl"],
+            ["heap", "held", "helm", "helt", "hepl"],
+        ),
         ("zzzzzzzz", ["help"], []),
         ("help", [], []),
     ],

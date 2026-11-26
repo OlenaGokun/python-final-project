@@ -16,7 +16,9 @@ class DeleteContactCommand(AddressBookCommand):
         return "delete-contact --name <contact name>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name"}
         options = parse_options(args, required, required, self.get_usage())
         name = " ".join(options["--name"])
@@ -25,7 +27,9 @@ class DeleteContactCommand(AddressBookCommand):
 
         while True:
             try:
-                answer = input(f"Delete contact '{display_name}'? (Y)es/(N)o: ")
+                answer = input(
+                    f"Delete contact '{display_name}'? (Y)es/(N)o: "
+                )
             except (EOFError, KeyboardInterrupt):
                 return "Contact deletion canceled."
 

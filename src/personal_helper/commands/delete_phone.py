@@ -15,9 +15,13 @@ class DeletePhoneCommand(AddressBookCommand):
         return "delete-phone --name <name> --phone <phone-or-alias>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name", "--phone"}
-        options = parse_options(args, required, required, self.get_usage(), single={"--phone"})
+        options = parse_options(
+            args, required, required, self.get_usage(), single={"--phone"}
+        )
         record = address_book[" ".join(options["--name"])]
         record.remove_phone(options["--phone"][0])
         return f"✅ Phone removed for {record.name.value}."

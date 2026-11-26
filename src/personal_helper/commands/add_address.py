@@ -15,7 +15,9 @@ class AddAddressCommand(AddressBookCommand):
         return "add-address --name <name> --address <address>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name", "--address"}
         options = parse_options(args, required, required, self.get_usage())
         name = " ".join(options["--name"])

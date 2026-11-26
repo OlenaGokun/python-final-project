@@ -1,11 +1,6 @@
 """Unit tests for address book commands"""
 
-import pytest
 from personal_helper.models import PersonalHelper
-from personal_helper.models.book import AddressBook
-from personal_helper.models.record import Record
-from personal_helper.command_registry import CommandRegistry
-from personal_helper.core.exceptions import InvalidInputError, CommandError
 from personal_helper.commands.base_command import BaseCommand, CommandLookup
 from personal_helper.commands.hello import HelloCommand
 from personal_helper.commands.help import HelpCommand
@@ -14,16 +9,20 @@ from personal_helper.commands.help import HelpCommand
 # ADD COMMAND TESTS
 # ============================================================================
 
+
 class TestHelpCommand:
     """Tests for help command"""
 
-    def test_help_before_registration_reports_unexpected_error(self, data, monkeypatch):
+    def test_help_before_registration_reports_unexpected_error(
+        self, data, monkeypatch
+    ):
         monkeypatch.setattr("sys.stdout.isatty", lambda: False)
 
         result = HelpCommand().run([], data)
 
         assert result == (
-            "⚠️ Unexpected error: HelpCommand must be registered before it can run"
+            "⚠️ Unexpected error: HelpCommand must be registered "
+            "before it can run"
         )
 
     def test_help_all_commands(self, registry, book):
@@ -60,18 +59,30 @@ class TestHelpCommand:
         result = cmd.run(["--command", "hello"], PersonalHelper(book))
 
         assert "📖" in result
-        assert "How can I help you?" in registry.get_command("hello").run([], PersonalHelper(book))
+        assert "How can I help you?" in registry.get_command("hello").run(
+            [], PersonalHelper(book)
+        )
 
     def test_help_exit_command(self, registry, book):
-        result = registry.get_command("help").run(["--command", "exit"], PersonalHelper(book))
+        result = registry.get_command("help").run(
+            ["--command", "exit"], PersonalHelper(book)
+        )
 
         assert "Help for 'exit' command" in result
         assert "Usage:       exit" in result
 
-    def test_help_rejects_positional_and_duplicate_options(self, registry, book):
+    def test_help_rejects_positional_and_duplicate_options(
+        self, registry, book
+    ):
         cmd = registry.get_command("help")
-        for args in (["add-contact"], ["--command"], ["--command", "add-contact", "--command", "exit"]):
-            assert cmd.run(args, PersonalHelper(book)).startswith("❌ Invalid arguments.")
+        for args in (
+            ["add-contact"],
+            ["--command"],
+            ["--command", "add-contact", "--command", "exit"],
+        ):
+            assert cmd.run(args, PersonalHelper(book)).startswith(
+                "❌ Invalid arguments."
+            )
 
 
 def test_help_uses_an_alternative_command_lookup(data):
@@ -92,6 +103,7 @@ def test_help_uses_an_alternative_command_lookup(data):
     assert "hello" in command.run([], data)
     assert "Usage:       hello" in command.run(["--command", "hello"], data)
     assert "Unknown command" in command.run(["--command", "missing"], data)
+
 
 # ============================================================================
 # FACTORY TESTS

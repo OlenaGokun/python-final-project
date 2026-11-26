@@ -18,7 +18,9 @@ class DeleteNoteCommand(NotebookCommand):
 
     @input_error
     def run_with_notebook(self, args: list, notebook: Notebook) -> str:
-        options = parse_options(args, {"--title"}, {"--title"}, self.get_usage())
+        options = parse_options(
+            args, {"--title"}, {"--title"}, self.get_usage()
+        )
         title = " ".join(options["--title"])
         notebook.delete(title)
         return f"✅ Note '{title}' deleted."

@@ -15,7 +15,9 @@ class DeleteAddressCommand(AddressBookCommand):
         return "delete-address --name <name>"
 
     @input_error
-    def run_with_address_book(self, args: list, address_book: AddressBook) -> str:
+    def run_with_address_book(
+        self, args: list, address_book: AddressBook
+    ) -> str:
         required = {"--name"}
         options = parse_options(args, required, required, self.get_usage())
         record = address_book[" ".join(options["--name"])]

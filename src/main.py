@@ -39,7 +39,9 @@ def confirm_exit(data: PersonalHelper) -> bool:
 
     while True:
         try:
-            choice = input("Exit without saving? (yes/no): ").strip().casefold()
+            choice = (
+                input("Exit without saving? (yes/no): ").strip().casefold()
+            )
         except (EOFError, KeyboardInterrupt):
             print()
             return True

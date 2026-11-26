@@ -3,6 +3,7 @@ from datetime import date
 from personal_helper.models.fields import Birthday
 from personal_helper.core import InvalidBirthdayFormatError
 
+
 class TestBirthday(unittest.TestCase):
     def test_accepts_valid_date_format(self):
         birthday = Birthday("15.03.1990")
@@ -43,7 +44,10 @@ class TestBirthday(unittest.TestCase):
     def test_error_message_format(self):
         with self.assertRaises(InvalidBirthdayFormatError) as context:
             Birthday("invalid")
-        self.assertEqual(str(context.exception), "Invalid date format. Use DD.MM.YYYY")
+        self.assertEqual(
+            str(context.exception), "Invalid date format. Use DD.MM.YYYY"
+        )
+
 
 class TestBirthdayEquality(unittest.TestCase):
     def test_equal_birthdays(self):
@@ -60,6 +64,7 @@ class TestBirthdayEquality(unittest.TestCase):
         b1 = Birthday("15.03.1990")
         b2 = Birthday("15.03.1990")
         self.assertEqual(len({b1, b2}), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

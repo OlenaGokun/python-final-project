@@ -1,6 +1,6 @@
 import pytest
 
-from personal_helper.models import PersonalHelper, Record
+from personal_helper.models import Record
 
 
 def test_add_address_updates_existing_contact(registry, data):
@@ -56,7 +56,9 @@ def test_delete_address_removes_existing_address(registry, data):
     record = data.address_book.add_record(Record("Jane"))
     record.add_address("Main st. 5")
 
-    result = registry.get_command("delete-address").run(["--name", "Jane"], data)
+    result = registry.get_command("delete-address").run(
+        ["--name", "Jane"], data
+    )
 
     assert result == "✅ Address removed for Jane."
     assert record.address is None
@@ -65,6 +67,8 @@ def test_delete_address_removes_existing_address(registry, data):
 def test_delete_address_requires_existing_address(registry, data):
     data.address_book.add_record(Record("Jane"))
 
-    result = registry.get_command("delete-address").run(["--name", "Jane"], data)
+    result = registry.get_command("delete-address").run(
+        ["--name", "Jane"], data
+    )
 
     assert result == "❌ Address not set for Jane."

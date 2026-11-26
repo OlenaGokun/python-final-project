@@ -68,14 +68,18 @@ class Record:
     def remove_phone(self, phone):
         found = self.find_phone(phone)
         if found is None:
-            raise PhoneNotFoundError(f"Phone {phone} not found for {self.name}.")
+            raise PhoneNotFoundError(
+                f"Phone {phone} not found for {self.name}."
+            )
         self._phones.remove(found)
         return found
 
     def edit_phone(self, old_phone, new_phone):
         found = self.find_phone(old_phone)
         if found is None:
-            raise PhoneNotFoundError(f"Phone {old_phone} not found for {self.name}.")
+            raise PhoneNotFoundError(
+                f"Phone {old_phone} not found for {self.name}."
+            )
         normalized_new = normalize_phone(new_phone)
         replacement = Phone(normalized_new, found.alias)
         other_phones = (phone for phone in self._phones if phone is not found)
@@ -99,13 +103,16 @@ class Record:
 
         return next((p for p in self._phones if p.value == normalized), None)
 
-    def _validate_phone(self, candidate: Phone, existing: Iterable[Phone]) -> None:
+    def _validate_phone(
+        self, candidate: Phone, existing: Iterable[Phone]
+    ) -> None:
         alias_key = candidate.alias_key
         for phone in existing:
             selectors = (phone.value, phone.alias_key)
             if alias_key is not None and alias_key in selectors:
                 raise DuplicatePhoneError(
-                    f"Phone alias '{candidate.alias}' already exists for {self.name}."
+                    f"Phone alias '{candidate.alias}' already exists "
+                    f"for {self.name}."
                 )
             if candidate.value in selectors:
                 raise DuplicatePhoneError(
@@ -165,10 +172,22 @@ class Record:
         birthday_str = f", birthday: {self.birthday}" if self.birthday else ""
         email_str = f", email: {self.email}" if self.email else ""
         address_str = f", address: {self.address}" if self.address else ""
-        return f"Contact name: {self.name.value}, phones: {'; '.join(map(str, self.phones))}{email_str}{address_str}{birthday_str}"
+        phones = "; ".join(map(str, self.phones))
+        return (
+            f"Contact name: {self.name.value}, phones: {phones}"
+            f"{email_str}{address_str}{birthday_str}"
+        )
 
     def __repr__(self):
-        birthday_repr = f", birthday={self.birthday.value!r}" if self.birthday else ""
+        birthday_repr = (
+            f", birthday={self.birthday.value!r}" if self.birthday else ""
+        )
         email_repr = f", email={self.email.value!r}" if self.email else ""
-        address_repr = f", address={self.address.value!r}" if self.address else ""
-        return f"Record({self.name.value!r}, phones={[p.value for p in self.phones]!r}{email_repr}{address_repr}{birthday_repr})"
+        address_repr = (
+            f", address={self.address.value!r}" if self.address else ""
+        )
+        phones = [p.value for p in self.phones]
+        return (
+            f"Record({self.name.value!r}, phones={phones!r}"
+            f"{email_repr}{address_repr}{birthday_repr})"
+        )
