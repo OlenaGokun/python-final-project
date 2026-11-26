@@ -129,6 +129,11 @@ change-phone --name Jane --old-phone mobile --new-phone 8889990001
 delete-phone --name Jane --phone 8889990001
 add-phone --name Mary Jane --phone 0501234567 --alias home
 ```
+`add-contact --phone` and `change-phone --new-phone` accept numbers such as
+`0501234567`, `+38(050)123-45-67`, `38050-123-45-67`, and `80501234567`.
+Enter each number without spaces. The app normalizes, stores, and displays
+`0501234567`. Use the stored 10 digits (or a phone alias) for `--old-phone`,
+and a substring of the stored digits for phone searches.
 
 In commands that use options, names, titles, text, and search queries can
 contain spaces without quotes.

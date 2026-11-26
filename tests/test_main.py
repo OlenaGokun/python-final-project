@@ -236,7 +236,8 @@ def test_cli_retries_invalid_contact_fields_without_losing_other_values(monkeypa
     assert prompts.count("Enter a valid phone (or cancel): ") == 2
     assert prompts.count("Enter a valid email (or cancel): ") == 1
     output = capsys.readouterr().out
-    assert output.count("❌ Phone must be exactly 10 digits") == 2
+    assert "❌ Phone must be a valid phone number, got 'bad'." in output
+    assert "❌ Phone must be a valid phone number, got 'still-bad'." in output
     assert "❌ Invalid email format" in output
     assert "✅ Contact 'Jane' added." in output
 

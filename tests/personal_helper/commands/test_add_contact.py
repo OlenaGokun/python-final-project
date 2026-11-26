@@ -239,7 +239,7 @@ class TestAddCommand:
         result = cmd.run(["--name", "John", "--phone", "phone1", "phone2"], PersonalHelper(book))
 
         assert "❌" in result
-        assert "Phone must be exactly" in result
+        assert "Phone must be a valid phone number" in result
 
 # ============================================================================
 # ADD BIRTHDAY COMMAND TESTS

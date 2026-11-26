@@ -80,9 +80,15 @@ class TestPhone(unittest.TestCase):
         with self.assertRaises(InvalidPhoneFormatError):
             Phone("123456789a")
 
-    def test_formatting_characters_are_rejected(self):
-        with self.assertRaises(InvalidPhoneFormatError):
-            Phone("123-456-7890")
+    def test_normalizes_various_input_formats(self):
+        self.assertEqual(Phone("    +38(050)123-32-34").value, "0501233234")
+        self.assertEqual(Phone("     0503451234").value, "0503451234")
+        self.assertEqual(Phone("(050)8889900").value, "0508889900")
+        self.assertEqual(Phone("38050-111-22-22").value, "0501112222")
+        self.assertEqual(Phone("38050 111 22 11   ").value, "0501112211")
+        self.assertEqual(Phone("123-456-7890").value, "1234567890")
+        self.assertEqual(Phone("80501234567").value, "0501234567")
+        self.assertEqual(str(Phone("+38(050)123-45-67")), "0501234567")
 
     def test_non_ascii_digits_are_rejected(self):
         with self.assertRaises(InvalidPhoneFormatError):
