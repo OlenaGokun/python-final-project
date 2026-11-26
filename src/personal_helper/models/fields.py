@@ -180,12 +180,8 @@ class Birthday(Field):
     def __str__(self):
         # Same format the user types it in.
         return self.value.strftime("%d.%m.%Y")
-<<<<<<< HEAD
-    
-=======
 
 
->>>>>>> decb029 (added linter, fixed issues)
 class Email(Field):
     EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 

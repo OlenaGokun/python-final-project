@@ -12,7 +12,10 @@ class ChangePhoneCommand(ContactFieldRetry, AddressBookCommand):
         return "change-phone"
 
     def get_description(self) -> str:
-        return "change phone number for a contact; use stored 10 digits for --old-phone and enter --new-phone without spaces"
+        return (
+            "change phone number for a contact; use stored 10 digits for "
+            "--old-phone and enter --new-phone without spaces"
+        )
 
     def get_usage(self) -> str:
         return (
