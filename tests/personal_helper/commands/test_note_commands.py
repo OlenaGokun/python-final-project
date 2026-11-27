@@ -50,7 +50,7 @@ def test_note_displays_use_color_only_in_terminal(registry, data, monkeypatch):
         ),
         (
             "delete-note-tags",
-            "delete-note-tags --title <title> --tags <tag> [tag ...]",
+            "delete-note-tags --title <title> [--tags <tag> [tag ...]]",
         ),
     ],
 )
@@ -156,6 +156,7 @@ def test_note_commands_validate_arguments(registry, data, command_name, args):
         ("delete-note", ["List"]),
         ("add-note-tags", ["--title", "List", "--tags"]),
         ("delete-note-tags", ["--tags", "food"]),
+        ("delete-note-tags", ["--title", "List", "--tags"]),
     ],
 )
 def test_note_commands_reject_bad_options_without_mutation(
@@ -451,7 +452,7 @@ def test_tag_commands(registry, data):
     ("name", "args"),
     [
         ("add-note-tags", ["--title", "shopping"]),
-        ("delete-note-tags", ["--title", "shopping"]),
+        ("delete-note-tags", []),
     ],
 )
 def test_tag_commands_validate_arguments(registry, data, name, args):
@@ -460,3 +461,26 @@ def test_tag_commands_validate_arguments(registry, data, name, args):
         .run(args, data)
         .startswith("❌ Invalid arguments.")
     )
+
+
+@pytest.mark.parametrize("tags", [{"food", "home"}, set()])
+def test_delete_note_tags_without_tags_clears_all(registry, data, tags):
+    data.notebook.add("Shopping list", "Buy milk", tags)
+    data.notebook.add("Other", "Keep tags", {"food"})
+
+    result = registry.get_command("delete-note-tags").run(
+        ["--title", "shopping", "list"], data
+    )
+
+    assert result == "✅ Tags removed from note 'shopping list'."
+    assert data.notebook["Shopping list"].tags == frozenset()
+    assert data.notebook["Shopping list"].text.value == "Buy milk"
+    assert data.notebook["Other"].tags == {Tag("food")}
+
+
+def test_delete_all_tags_requires_existing_note(registry, data):
+    result = registry.get_command("delete-note-tags").run(
+        ["--title", "Missing"], data
+    )
+
+    assert result == "❌ Note 'Missing' not found."

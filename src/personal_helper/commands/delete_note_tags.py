@@ -9,15 +9,19 @@ class DeleteNoteTagsCommand(NotebookCommand):
         return "delete-note-tags"
 
     def get_description(self) -> str:
-        return "remove tags from a note"
+        return "remove selected tags or all tags from a note"
 
     def get_usage(self) -> str:
-        return "delete-note-tags --title <title> --tags <tag> [tag ...]"
+        return "delete-note-tags --title <title> [--tags <tag> [tag ...]]"
 
     @input_error
     def run_with_notebook(self, args: list, notebook: Notebook) -> str:
-        required = {"--title", "--tags"}
-        options = parse_options(args, required, required, self.get_usage())
+        options = parse_options(
+            args, {"--title", "--tags"}, {"--title"}, self.get_usage()
+        )
         title = " ".join(options["--title"])
-        notebook.remove_tags(title, set(options["--tags"]))
+        if "--tags" in options:
+            notebook.remove_tags(title, set(options["--tags"]))
+        else:
+            notebook.update_note(title, tags=set())
         return f"✅ Tags removed from note '{title}'."
